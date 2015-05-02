@@ -1,0 +1,35 @@
+# Object files
+*.o
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Building
+autom4te.cache
+.deps
+config.status
+config.log
+Makefile
+config.h
+
+# Xcode
+*.xcuserdatad
+
+# Packages
+ccnx-tutorial*.tar.gz
+
+stamp-h1
+*~
+

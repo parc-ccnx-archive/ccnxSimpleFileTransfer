@@ -1,0 +1,18 @@
+# Change Log
+## [1.0.20150501] - 2015-05-01
+### Changed
+- Initial Github release
+- Updated README.md
+- Include sample test
+
+## [1.0.20150302] - 2015-03-02
+### Changed
+- Updated to new Distillery CCNx binaries
+
+## [1.0.20141125] - 2014-11-25
+### Changed
+- Updated to new CCN Tutorial binaries
+
+## [pre-release] - 2014-09-24
+### Changed
+- Initial release of CCN Tutorial
