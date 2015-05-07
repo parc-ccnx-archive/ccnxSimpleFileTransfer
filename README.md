@@ -114,7 +114,7 @@ For any questions please use the CCNx mailing list.  ccnx@ccnx.org
 LICENSE
 -------
 
-This File is licensed under the BSD License.  See LICENSE File.
+This software is licensed under the BSD License.  See LICENSE File.
 
 
 
