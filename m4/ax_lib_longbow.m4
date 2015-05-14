@@ -104,6 +104,7 @@ AC_DEFUN([AX_LIB_LONGBOW], [
 			if test "$longbow_lib" = "yes" -a "$longbow_h" = "yes" ; then
 				AC_SUBST(LONGBOW_INCLUDE, [-I$with_longbow/include])
 				AC_SUBST(LONGBOW_LIB, [-L$with_longbow/lib])
+				AC_SUBST(LONGBOW_LIB_PATH, [$with_longbow/lib])
 				AC_MSG_RESULT(yes)
 			else
 				AC_MSG_RESULT(failed)

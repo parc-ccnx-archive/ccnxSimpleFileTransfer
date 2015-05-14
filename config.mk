@@ -21,11 +21,12 @@ LIBPARC_LIB_FLAG  = @LIBPARC_LIB@ -lparc -lcrypto -lm
 LONGBOW_LIB_FLAG  = @LONGBOW_LIB@ -llongbow -llongbow-ansiterm
 LIBEVENT_LIB_FLAG = @LIBEVENT_LIB@ -levent
 
+export LD_RUN_PATH?=@LIBCCNX_LIB_PATH@:@LIBPARC_LIB_PATH@:@LONGBOW_LIB_PATH@:@LIBEVENT_LIB_PATH@
 
 # -pipe for performance
 # -c99 to ensure compliance to C99 spec
 AM_CPPFLAGS = -pipe --std=c99 @DEBUG_FLAG@ @DEBUG_CPPFLAGS@ 
-AM_LDFLAGS  =
+AM_LDFLAGS  = 
 
 
 # Define project-wide CPP flags to be passed to child Makefiles

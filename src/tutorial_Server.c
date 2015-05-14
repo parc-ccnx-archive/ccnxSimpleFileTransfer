@@ -56,7 +56,8 @@ _setupServerPortalFactory(void)
 static uint64_t
 _getNumberOfChunksRequired(uint64_t dataLength, uint32_t chunkSize)
 {
-    return (dataLength / chunkSize) + (dataLength % chunkSize > 0 ? 1 : 0);
+    uint64_t chunks = (dataLength / chunkSize) + (dataLength % chunkSize > 0 ? 1 : 0);
+    return (chunks == 0) ? 1 : chunks;
 }
 
 /**

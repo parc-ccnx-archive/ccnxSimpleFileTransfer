@@ -1,4 +1,11 @@
 # Change Log
+## [1.0.20150513] - 2015-05-13
+### Changed
+- Add BASE_VERSION
+- Updated configure script
+- Build in LD_RUN_PATH with default values from configure
+- Allow empty directories to be served without client timeout
+
 ## [1.0.20150501] - 2015-05-01
 ### Changed
 - Initial Github release

@@ -105,6 +105,7 @@ AC_DEFUN([AX_LIB_CCNX], [
 			if test "$libccnx_lib" = "yes" -a "$libccnx_h" = "yes" ; then
 				AC_SUBST(LIBCCNX_INCLUDE, [-I$with_libccnx/include])
 				AC_SUBST(LIBCCNX_LIB, [-L$with_libccnx/lib])
+				AC_SUBST(LIBCCNX_LIB_PATH, [$with_libccnx/lib])
 				AC_MSG_RESULT(yes)
 			else
 				AC_MSG_RESULT(failed)

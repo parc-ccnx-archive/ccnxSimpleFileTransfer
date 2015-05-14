@@ -95,7 +95,10 @@ subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_longbow.m4 \
 	$(top_srcdir)/m4/ax_lib_parc.m4 \
-	$(top_srcdir)/m4/ax_lib_ccnx.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/ax_lib_ccnx.m4 \
+	$(top_srcdir)/m4/ax_lib_event.m4 \
+	$(top_srcdir)/m4/ax_set_version.m4 \
+	$(top_srcdir)/m4/ax_debug_option.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -236,16 +239,21 @@ LDFLAGS = @LDFLAGS@
 LIBCCNX = @LIBCCNX@
 LIBCCNX_INCLUDE = @LIBCCNX_INCLUDE@
 LIBCCNX_LIB = @LIBCCNX_LIB@
+LIBCCNX_LIB_PATH = @LIBCCNX_LIB_PATH@
+LIBEVENT = @LIBEVENT@
 LIBEVENT_INCLUDE = @LIBEVENT_INCLUDE@
 LIBEVENT_LIB = @LIBEVENT_LIB@
+LIBEVENT_LIB_PATH = @LIBEVENT_LIB_PATH@
 LIBOBJS = @LIBOBJS@
 LIBPARC = @LIBPARC@
 LIBPARC_INCLUDE = @LIBPARC_INCLUDE@
 LIBPARC_LIB = @LIBPARC_LIB@
+LIBPARC_LIB_PATH = @LIBPARC_LIB_PATH@
 LIBS = @LIBS@
 LONGBOW = @LONGBOW@
 LONGBOW_INCLUDE = @LONGBOW_INCLUDE@
 LONGBOW_LIB = @LONGBOW_LIB@
+LONGBOW_LIB_PATH = @LONGBOW_LIB_PATH@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
@@ -808,6 +816,8 @@ uninstall-am:
 	mostlyclean-generic pdf pdf-am ps ps-am tags tags-am uninstall \
 	uninstall-am
 
+
+export LD_RUN_PATH?=@LIBCCNX_LIB_PATH@:@LIBPARC_LIB_PATH@:@LONGBOW_LIB_PATH@:@LIBEVENT_LIB_PATH@
 
 docs:
 

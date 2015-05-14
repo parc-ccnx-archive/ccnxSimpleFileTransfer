@@ -60,10 +60,7 @@ The `--prefix=` argument specifies the destination directory if you run
  `make install`
 
 3. Compile the tutorial, setting the `LD_RUN_PATH` for the compiled executables:  
-`$ LD_RUN_PATH=/usr/local/ccnx/lib:/usr/local/parc/lib make`  
-The `LD_RUN_PATH` sets the default place where the binaries will find the shared
- libraries. If you don't set the `LD_RUN_PATH` you will have to specify the
- location of the libraries via `LD_LIBRARY_PATH` when you run the executables.
+`$ make`  
 
 4. At this point, the compiled binaries for `tutorial_Client` and the
 `tutorial_Server` can be found in the `tutorial/src` directory.
@@ -98,6 +95,10 @@ the bin directory (eg `$HOME/ccn/bin`)
 
 - `tutorial_Client` and tutorial_Server require `metis_daemon` to be running.
 
+- The makefiles automatically set an LD_RUN_PATH variable so that you don't
+  have to set it. They use the paths found by the configure script as default
+  vaules.  If a different value is found in the environment then that will be
+  used.  If you have no idea what this is about you can ignore this.
 
 If you have any problems with the system, please discuss them on the developer 
 mailing list:  `ccnx@ccnx.org`.  If the problem is not resolved via mailing list 

@@ -105,6 +105,7 @@ AC_DEFUN([AX_LIB_PARC], [
 			if test "$parc_lib" = "yes" -a "$parc_h" = "yes" ; then
 				AC_SUBST(LIBPARC_INCLUDE, [-I$with_libparc/include])
 				AC_SUBST(LIBPARC_LIB, [-L$with_libparc/lib])
+				AC_SUBST(LIBPARC_LIB_PATH, [$with_libparc/lib])
 				AC_MSG_RESULT(yes)
 			else
 				AC_MSG_RESULT(failed)
