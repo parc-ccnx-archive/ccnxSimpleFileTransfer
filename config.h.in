@@ -32,6 +32,9 @@
 /* Define if you have LIBPARC library */
 #undef HAVE_LIBPARC
 
+/* Define if you have LIBSSL library */
+#undef HAVE_LIBSSL
+
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 

@@ -1,4 +1,8 @@
 # Change Log
+## [1.0.20150518] - 2015-05-18
+### Changed
+- Make configure check for libssl
+
 ## [1.0.20150514] - 2015-05-14
 ### Changed
 - Add BASE_VERSION

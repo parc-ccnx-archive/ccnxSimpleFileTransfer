@@ -1,10 +1,11 @@
 AC_INIT([CCNx-Tutorial-Demo], m4_esyscmd([tr -d '\n' < BASE_VERSION]), [bugs@ccnx.org])
 AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects foreign])
 
+m4_include(m4/ax_lib_event.m4)
+m4_include(m4/ax_lib_ssl.m4)
 m4_include(m4/ax_lib_longbow.m4)
 m4_include(m4/ax_lib_parc.m4)
 m4_include(m4/ax_lib_ccnx.m4)
-m4_include(m4/ax_lib_event.m4)
 m4_include(m4/ax_set_version.m4)
 m4_include(m4/ax_debug_option.m4)
 
@@ -48,6 +49,7 @@ AH_TOP([#include <config_top.h>])
 
 
 AX_LIB_EVENT
+AX_LIB_SSL
 AX_LIB_LONGBOW
 AX_LIB_PARC
 AX_LIB_CCNX

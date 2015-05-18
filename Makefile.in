@@ -93,10 +93,11 @@ DIST_COMMON = $(srcdir)/config.mk $(srcdir)/Makefile.in \
 	compile depcomp install-sh missing
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_longbow.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_event.m4 \
+	$(top_srcdir)/m4/ax_lib_ssl.m4 \
+	$(top_srcdir)/m4/ax_lib_longbow.m4 \
 	$(top_srcdir)/m4/ax_lib_parc.m4 \
 	$(top_srcdir)/m4/ax_lib_ccnx.m4 \
-	$(top_srcdir)/m4/ax_lib_event.m4 \
 	$(top_srcdir)/m4/ax_set_version.m4 \
 	$(top_srcdir)/m4/ax_debug_option.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -250,6 +251,10 @@ LIBPARC_INCLUDE = @LIBPARC_INCLUDE@
 LIBPARC_LIB = @LIBPARC_LIB@
 LIBPARC_LIB_PATH = @LIBPARC_LIB_PATH@
 LIBS = @LIBS@
+LIBSSL = @LIBSSL@
+LIBSSL_INCLUDE = @LIBSSL_INCLUDE@
+LIBSSL_LIB = @LIBSSL_LIB@
+LIBSSL_LIB_PATH = @LIBSSL_LIB_PATH@
 LONGBOW = @LONGBOW@
 LONGBOW_INCLUDE = @LONGBOW_INCLUDE@
 LONGBOW_LIB = @LONGBOW_LIB@
