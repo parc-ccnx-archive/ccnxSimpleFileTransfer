@@ -3,7 +3,7 @@
  * Copyright 2014-2015 Palo Alto Research Center, Inc. (PARC), a Xerox company.  All Rights Reserved.
  * The content of this file, whole or in part, is subject to licensing terms.
  * If distributing this software, include this License Header Notice in each
- * file and provide the accompanying LICENSE file. 
+ * file and provide the accompanying LICENSE file.
  */
 /**
  * @author Glenn Scott, Alan Walendowski, Computing Science Laboratory, PARC
@@ -64,24 +64,21 @@ static char *
 _assembleDirectoryListing(PARCBuffer *payload, uint64_t chunkNumber, uint64_t finalChunkNumber)
 {
     char *result = NULL;
-    static PARCElasticBuffer *directoryList = NULL;
+    static PARCBufferComposer *directoryList = NULL;
 
     if (directoryList == NULL) {
-        directoryList = parcElasticBuffer_Create();
+        directoryList = parcBufferComposer_Create();
     }
 
-    if (chunkNumber == 0) {
-        parcElasticBuffer_Clear(directoryList);
-    }
-
-    parcElasticBuffer_PutBuffer(directoryList, payload);
+    parcBufferComposer_PutBuffer(directoryList, payload);
 
     if (chunkNumber == finalChunkNumber) {
-        parcElasticBuffer_Flip(directoryList);
+        PARCBuffer *buffer = parcBufferComposer_ProduceBuffer(directoryList);
 
         // Since this was the last chunk, return the completed directory listing.
-        result = parcElasticBuffer_ToString(directoryList);
-        parcElasticBuffer_Release(&directoryList);
+        result = parcBuffer_ToString(buffer);
+        parcBuffer_Release(&buffer);
+        parcBufferComposer_Release(&directoryList);
     }
 
     return result;
@@ -243,7 +240,7 @@ _createInterest(const char *command, const char *targetName)
         PARCBuffer *targetBuf = parcBuffer_WrapCString((char *) targetName);
         CCNxNameSegment *targetSegment = ccnxNameSegment_CreateTypeValue(CCNxNameLabelType_NAME, targetBuf);
         parcBuffer_Release(&targetBuf);
-        
+
 
         // Append it to the ccnxName.
         ccnxName_Append(interestName, targetSegment);

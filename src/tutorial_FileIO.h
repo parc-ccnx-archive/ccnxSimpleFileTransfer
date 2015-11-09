@@ -3,7 +3,7 @@
  * Copyright 2014-2015 Palo Alto Research Center, Inc. (PARC), a Xerox company.  All Rights Reserved.
  * The content of this file, whole or in part, is subject to licensing terms.
  * If distributing this software, include this License Header Notice in each
- * file and provide the accompanying LICENSE file. 
+ * file and provide the accompanying LICENSE file.
  */
 /**
  * @author Alan Walendowski, Computing Science Laboratory, PARC
@@ -14,7 +14,6 @@
 #define tutorial_FileIO_h
 
 #include <parc/algol/parc_Buffer.h>
-#include <parc/algol/parc_ElasticBuffer.h>
 
 /**
  * Given a fileName and chunk number, retrieve that chunk from the specified file. The
