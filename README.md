@@ -67,7 +67,9 @@ it might look like this:
 
 If 'make' has trouble finding libraries, such as libevent, you can also export LIBEVENT_HOME, like so:
  `export LIBEVENT_HOME=<value of DISTILLERY_EXTERN_DIR from 'make info' in your Distillery directory>`
+
 e.g.
+
  `export LIBEVENT_HOME=/usr/local/ccnx/dependencies/build`
 
 4. At this point, the compiled binaries for `tutorial_Client` and the
