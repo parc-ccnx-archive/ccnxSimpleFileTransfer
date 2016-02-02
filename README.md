@@ -54,30 +54,34 @@ through to the tutorial_Server.
 
 Compiling the tutorial:
 
-1. Go into the tutorial directory created when you cloned or unpacked the
-   tutorial:   
+1. Go into the tutorial directory created when you cloned or unpacked the tutorial:   
    `$ cd ccnx-tutorial-<version>`
 
-2. Configure the tutorial program:  
-`$ ./configure --prefix=$HOME/ccnx`.  
-The `--prefix=` argument specifies the destination directory if you run
- `make install`
-   If necessary, you can also specify the locations of libraries on the configure line, like so:
-  ./configure  --with-libevent=/usr/local/ccnx/dependencies/build --with-libssl=/usr/local/ccnx/dependencies/build
+2. Set the CCNX_HOME environment variable to the location of your Distillery build. In zsh, for example,
+it might look like this:
+`export CCNX_HOME=/path/to/CCNx_Distillery/usr`
+   
 
 3. Compile the tutorial.
 `$ make`  
 
+If 'make' has trouble finding libraries, such as libevent, you can also export LIBEVENT_HOME, like so:
+
+❯ export LIBEVENT_HOME=<value of DISTILLERY_EXTERN_DIR from 'make info' in your Distillery directory>
+
+e.g.
+❯ export LIBEVENT_HOME=/usr/local/ccnx/dependencies/build
+
 4. At this point, the compiled binaries for `tutorial_Client` and the
 `tutorial_Server` should be built.
 
-5. Install the tutorial binaries to the specified prefix in the
-configure step (eg `$HOME/ccn`). You will then be able to find the binaries in
-the bin directory (eg `$HOME/ccn/bin`)
+5. Optionally install the tutorial binaries to the specified prefix in the
+configure step (eg `$HOME/ccnx`). You will then be able to find the binaries in
+the bin directory (eg `$HOME/ccnx/bin`)
 `make install`
 
 6. Start the CCNx forwarder, `metis_daemon`:  
-`$ /usr/local/ccnx/bin/metis_daemon -c 0&`
+`$hOME/ccnx/bin/metis_daemon -c 0&`
 
 7. Running the tutorial_Server and tutorial_Client:
   Start the tutorial_Server, giving it a directory path as an argument.  
