@@ -34,87 +34,109 @@
 #serial 1
 
 AC_DEFUN([AX_LIB_SSL], [
-	AC_MSG_CHECKING(for Libssl library)
 	AC_REQUIRE([AC_PROG_CC])
-	#
-	# User hints...
-	#
-	AC_ARG_VAR([LIBSSL], [LIBSSL library location])
-	AC_ARG_WITH([libssl],
-		[AS_HELP_STRING([--with-libssl],
-		[user defined path to LIBSSL library])],
-		[
-			if test -n "$LIBSSL" ; then
-				AC_MSG_RESULT(yes)
-				with_libssl=$LIBSSL
-			elif test "$withval" != no ; then
-				AC_MSG_RESULT(yes)
-				with_libssl=$withval
-			else
-				AC_MSG_RESULT(no)
-			fi
-		],
-		[
-			if test -n "$LIBSSL" ; then
-				with_libssl=$LIBSSL
-				AC_MSG_RESULT(yes)
-			else
-				with_libssl=/usr
-				if test ! -f "$with_libssl/include/openssl/ssl.h" ; then
-					with_libssl=/usr/local
-					if test ! -f "$with_libssl/include/openssl/ssl.h" ; then
-					  with_libssl=""
-					  AC_MSG_RESULT(failed)
-				    else
-					  AC_MSG_RESULT($with_libssl)
-					fi
+    #
+    # Check if we work automatically...
+    #
+
+	AC_MSG_CHECKING(for Libssl in default location)
+	AC_MSG_RESULT(yes)
+
+	AC_CHECK_LIB(ssl, SSL_get_version,
+		[libssl_lib=yes], [libssl_lib=no], 
+        [-lcrypto])
+	AC_CHECK_HEADER(openssl/ssl.h, [libssl_h=yes],
+		[libssl_h=no], [/* check */])
+
+	if test "$libssl_lib" = "yes" -a "$libssl_h" = "yes" ; then
+		AC_SUBST(LIBSSL_INCLUDE, [])
+		AC_SUBST(LIBSSL_LIB, [])
+		AC_SUBST(LIBSSL_LIB_PATH, [])
+		ifelse([$1],,[AC_DEFINE(HAVE_LIBSSL,1,[Define if you have LIBSSL library])],[$1])
+		:
+	else	
+
+	    AC_MSG_CHECKING(for Libssl library in other locations)
+		#
+		# User hints...
+		#
+		AC_ARG_VAR([LIBSSL], [LIBSSL library location])
+		AC_ARG_WITH([libssl],
+			[AS_HELP_STRING([--with-libssl],
+			[user defined path to LIBSSL library])],
+			[
+				if test -n "$LIBSSL" ; then
+					AC_MSG_RESULT(yes)
+					with_libssl=$LIBSSL
+				elif test "$withval" != no ; then
+					AC_MSG_RESULT(yes)
+					with_libssl=$withval
 				else
-					AC_MSG_RESULT($with_libssl)
+					AC_MSG_RESULT(no)
+				fi
+			],
+			[
+				if test -n "$LIBSSL" ; then
+					with_libssl=$LIBSSL
+					AC_MSG_RESULT(yes)
+				else
+					with_libssl=/usr
+					if test ! -f "$with_libssl/include/openssl/ssl.h" ; then
+						with_libssl=/usr/local
+						if test ! -f "$with_libssl/include/openssl/ssl.h" ; then
+						  with_libssl=""
+						  AC_MSG_RESULT(failed)
+						else
+						  AC_MSG_RESULT($with_libssl)
+						fi
+					else
+						AC_MSG_RESULT($with_libssl)
+					fi
+				fi
+			])
+		#
+		# locate LIBSSL library
+		#
+			if test -n "$with_libssl" ; then
+				old_CFLAGS=$CFLAGS
+				old_LDFLAGS=$LDFLAGS
+				CFLAGS="-I$with_libssl/include $CFLAGS"
+				LDFLAGS="-L$with_libssl/lib $LDFLAGS"
+
+				AC_LANG_SAVE
+				AC_LANG_C
+
+				AC_CHECK_LIB(ssl, SSL_get_version,
+					[libssl_lib=yes], [libssl_lib=no], 
+					[-lcrypto])
+				AC_CHECK_HEADER(openssl/ssl.h, [libssl_h=yes],
+					[libssl_h=no], [/* check */])
+
+				AC_LANG_RESTORE
+
+				CFLAGS=$old_CFLAGS
+				LDFLAGS=$old_LDFLAGS
+
+				AC_MSG_CHECKING(if  Libssl in $with_libssl works)
+				if test "$libssl_lib" = "yes" -a "$libssl_h" = "yes" ; then
+					AC_SUBST(LIBSSL_INCLUDE, [-I$with_libssl/include])
+					AC_SUBST(LIBSSL_LIB, [-L$with_libssl/lib])
+					AC_SUBST(LIBSSL_LIB_PATH, [$with_libssl/lib])
+					AC_MSG_RESULT(yes)
+				else
+					AC_MSG_RESULT(failed)
 				fi
 			fi
-		])
-	#
-	# locate LIBSSL library
-	#
-		if test -n "$with_libssl" ; then
-			old_CFLAGS=$CFLAGS
-			old_LDFLAGS=$LDFLAGS
-			CFLAGS="-I$with_libssl/include $CFLAGS"
-			LDFLAGS="-L$with_libssl/lib $LDFLAGS"
-
-			AC_LANG_SAVE
-			AC_LANG_C
-
-			AC_CHECK_LIB(ssl, SSL_get_version,
-				[libssl_lib=yes], [libssl_lib=no], 
-                [-lcrypto])
-			AC_CHECK_HEADER(openssl/ssl.h, [libssl_h=yes],
-				[libssl_h=no], [/* check */])
-
-			AC_LANG_RESTORE
-
-			CFLAGS=$old_CFLAGS
-			LDFLAGS=$old_LDFLAGS
-
-			AC_MSG_CHECKING(if  Libssl in $with_libssl works)
-			if test "$libssl_lib" = "yes" -a "$libssl_h" = "yes" ; then
-				AC_SUBST(LIBSSL_INCLUDE, [-I$with_libssl/include])
-				AC_SUBST(LIBSSL_LIB, [-L$with_libssl/lib])
-				AC_SUBST(LIBSSL_LIB_PATH, [$with_libssl/lib])
-				AC_MSG_RESULT(yes)
+			#
+			#
+			#
+			if test x = x"$LIBSSL_LIB" ; then
+				ifelse([$2],,[AC_MSG_ERROR(Failed to find valid LIBSSL library)],[$2])
+				:
 			else
-				AC_MSG_RESULT(failed)
+				ifelse([$1],,[AC_DEFINE(HAVE_LIBSSL,1,[Define if you have LIBSSL library])],[$1])
+				:
 			fi
-		fi
-		#
-		#
-		#
-		if test x = x"$LIBSSL_LIB" ; then
-			ifelse([$2],,[AC_MSG_ERROR(Failed to find valid LIBSSL library)],[$2])
-			:
-		else
-			ifelse([$1],,[AC_DEFINE(HAVE_LIBSSL,1,[Define if you have LIBSSL library])],[$1])
-			:
-		fi
+        fi
 	])dnl AX_LIB_LIBSSL
 

@@ -1,17 +1,37 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
- * Copyright 2014-2015 Palo Alto Research Center, Inc. (PARC), a Xerox company.  All Rights Reserved.
- * The content of this file, whole or in part, is subject to licensing terms.
- * If distributing this software, include this License Header Notice in each
- * file and provide the accompanying LICENSE file. 
+ * Copyright (c) 2014-2015, Xerox Corporation (Xerox)and Palo Alto Research Center (PARC)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Patent rights are not granted under this agreement. Patent rights are
+ *       available under FRAND terms.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL XEROX or PARC BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /**
- * @author Glenn Scott, Alan Walendowski, Computing Science Laboratory, PARC
- * @copyright 2014-2015 Palo Alto Research Center, Inc. (PARC), A Xerox Company. All Rights Reserved.
+ * @author Glenn Scott, Alan Walendowski, Palo Alto Research Center (Xerox PARC)
+ * @copyright 2014-2015, Xerox Corporation (Xerox)and Palo Alto Research Center (PARC).  All rights reserved.
  */
 
 #include <config.h>
 #include <strings.h>
+#include <stdio.h>
 
 #include "tutorial_Common.h"
 #include "tutorial_FileIO.h"
@@ -258,7 +278,7 @@ _receiveAndAnswerInterests(CCNxPortal *portal, const CCNxName *domainPrefix, con
     bool result = false;
     CCNxMetaMessage *inboundMessage = NULL;
 
-    while ((inboundMessage = ccnxPortal_Receive(portal)) != NULL) {
+    while ((inboundMessage = ccnxPortal_Receive(portal, CCNxStackTimeout_Never)) != NULL) {
         if (ccnxMetaMessage_IsInterest(inboundMessage)) {
             CCNxInterest *interest = ccnxMetaMessage_GetInterest(inboundMessage);
 
@@ -271,7 +291,7 @@ _receiveAndAnswerInterests(CCNxPortal *portal, const CCNxName *domainPrefix, con
                 // We had a response, so send it back through the Portal.
                 CCNxMetaMessage *responseMessage = ccnxMetaMessage_CreateFromContentObject(response);
 
-                if (ccnxPortal_Send(portal, responseMessage) == false) {
+                if (ccnxPortal_Send(portal, responseMessage, CCNxStackTimeout_Never) == false) {
                     fprintf(stderr, "ccnxPortal_Send failed (error %d). Is the Forwarder running?\n", ccnxPortal_GetError(portal));
                 }
 
@@ -302,14 +322,13 @@ _serveDirectory(const char *directoryPath)
 
     CCNxPortalFactory *factory = _setupServerPortalFactory();
 
-    CCNxPortal *portal =
-        ccnxPortalFactory_CreatePortal(factory, ccnxPortalRTA_Message, &ccnxPortalAttributes_Blocking);
+    CCNxPortal *portal = ccnxPortalFactory_CreatePortal(factory, ccnxPortalRTA_Message);
 
     assertNotNull(portal, "Expected a non-null CCNxPortal pointer. Is the Forwarder running?");
 
     CCNxName *domainPrefix = ccnxName_CreateFromURI(tutorialCommon_DomainPrefix);
 
-    if (ccnxPortal_Listen(portal, domainPrefix)) {
+    if (ccnxPortal_Listen(portal, domainPrefix, 365 * 86400, CCNxStackTimeout_Never)) {
         printf("tutorial_Server: now serving files from %s\n", directoryPath);
         result = _receiveAndAnswerInterests(portal, domainPrefix, directoryPath);
     }

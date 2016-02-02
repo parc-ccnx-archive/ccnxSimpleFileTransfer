@@ -8,9 +8,9 @@
 #   The user may specify the location either by defining the environment
 #   variable LIBCCNX or by using the --with-libccnx option to configure. If the
 #   environment variable is defined it has precedent over everything else. If
-#   no location was specified then it searches in /usr/lib and /usr/local/lib
-#   and /usr/local/ccnx/lib for the library and in /usr/include and
-#   /usr/local/include and /usr/local/ccnx/include for the header files. Upon
+#   no location was specified then it searches in CCNX_HOME/lib, then /usr/lib 
+#   and finally /usr/local/lib for the library and in CCNX_HOME/include, 
+#   /usr/include and /usr/local/include for the header files. Upon
 #   sucessful completion the variables LIBCCNX_LIB and LIBCCNX_INCLUDE are set.
 #
 #   ACTION-IF-FOUND is a list of shell commands to run if a LIBCCNX library is
@@ -59,11 +59,11 @@ AC_DEFUN([AX_LIB_CCNX], [
 				with_libccnx=$LIBCCNX
 				AC_MSG_RESULT(yes)
 			else
-				with_libccnx=/usr
+				with_libccnx=$CCNX_HOME
 				if test ! -f "$with_libccnx/include/ccnx/common/libccnxCommon_About.h" ; then
-					with_libccnx=/usr/local
+					with_libccnx=/usr
 					if test ! -f "$with_libccnx/include/ccnx/common/libccnxCommon_About.h" ; then
-					  with_libccnx=/usr/local/ccnx
+					  with_libccnx=/usr/local
 					  if test ! -f "$with_libccnx/include/ccnx/common/libccnxCommon_About.h" ; then
 						  with_libccnx=""
 						  AC_MSG_RESULT(failed)

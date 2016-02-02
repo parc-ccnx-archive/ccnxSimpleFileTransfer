@@ -8,9 +8,9 @@
 #   The user may specify the location either by defining the environment
 #   variable LONGBOW or by using the --with-longbow option to configure. If the
 #   environment variable is defined it has precedent over everything else. If
-#   no location was specified then it searches in /usr/lib and /usr/local/lib
-#   and /usr/local/parc/lib for the library and in /usr/include and
-#   /usr/local/include and /usr/local/parc/include for the header files. Upon
+#   no location was specified then it searches in CCNX_HOME/lib, then /usr/lib 
+#   and finally /usr/local/lib for the library and in CCNX_HOME/include, 
+#   /usr/include and /usr/local/include for the header files. Upon
 #   sucessful completion the variables LONGBOW_LIB and LONGBOW_INCLUDE are set.
 #
 #   ACTION-IF-FOUND is a list of shell commands to run if a LONGBOW library is
@@ -59,11 +59,11 @@ AC_DEFUN([AX_LIB_LONGBOW], [
 				with_longbow=$LONGBOW
 				AC_MSG_RESULT(yes)
 			else
-				with_longbow=/usr
+				with_longbow=$CCNX_HOME
 				if test ! -f "$with_longbow/include/LongBow/longBow_About.h" ; then
-					with_longbow=/usr/local
+					with_longbow=/usr
 					if test ! -f "$with_longbow/include/LongBow/longBow_About.h" ; then
-					  with_longbow=/usr/local/parc
+					  with_longbow=/usr/local
 					  if test ! -f "$with_longbow/include/LongBow/longBow_About.h" ; then
 						  with_longbow=""
 						  AC_MSG_RESULT(failed)

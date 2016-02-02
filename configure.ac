@@ -6,7 +6,7 @@ m4_include(m4/ax_lib_ssl.m4)
 m4_include(m4/ax_lib_longbow.m4)
 m4_include(m4/ax_lib_parc.m4)
 m4_include(m4/ax_lib_ccnx.m4)
-m4_include(m4/ax_set_version.m4)
+m4_include(m4/ax_release_version.m4)
 m4_include(m4/ax_debug_option.m4)
 
 : ${CFLAGS=""}
@@ -54,7 +54,7 @@ AX_LIB_LONGBOW
 AX_LIB_PARC
 AX_LIB_CCNX
 AX_DEBUG_OPTION("-O3")
-AX_SET_VERSION
+AX_RELEASE_VERSION($PACKAGE_VERSION)
 
 
 AC_OUTPUT

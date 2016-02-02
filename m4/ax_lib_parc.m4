@@ -8,9 +8,9 @@
 #   The user may specify the location either by defining the environment
 #   variable LIBPARC or by using the --with-libparc option to configure. If the
 #   environment variable is defined it has precedent over everything else. If
-#   no location was specified then it searches in /usr/lib and /usr/local/lib
-#   and /usr/local/parc/lib for the library and in /usr/include and
-#   /usr/local/include and /usr/local/parc/include for the header files. Upon
+#   no location was specified then it searches in CCNX_HOME/lib, then /usr/lib 
+#   and finally /usr/local/lib for the library and in CCNX_HOME/include, 
+#   /usr/include and /usr/local/include for the header files. Upon
 #   sucessful completion the variables LIBPARC_LIB and LIBPARC_INCLUDE are set.
 #
 #   ACTION-IF-FOUND is a list of shell commands to run if a LIBPARC library is
@@ -59,11 +59,11 @@ AC_DEFUN([AX_LIB_PARC], [
 				with_libparc=$LIBPARC
 				AC_MSG_RESULT(yes)
 			else
-				with_libparc=/usr
+				with_libparc=$CCNX_HOME
 				if test ! -f "$with_libparc/include/parc/libparc_About.h" ; then
-					with_libparc=/usr/local
+					with_libparc=/usr
 					if test ! -f "$with_libparc/include/parc/libparc_About.h" ; then
-					  with_libparc=/usr/local/parc
+					  with_libparc=/usr/local
 					  if test ! -f "$with_libparc/include/parc/libparc_About.h" ; then
 						  with_libparc=""
 						  AC_MSG_RESULT(failed)
