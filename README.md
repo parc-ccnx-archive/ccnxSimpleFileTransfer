@@ -1,4 +1,5 @@
-CCN-Tutorial
+:q
+git CCN-Tutorial
 =================
 
 A simple file transfer server and client application for CCNx built on the Portal API.
@@ -68,7 +69,7 @@ it might look like this:
 If 'make' has trouble finding libraries, such as libevent, you can also export LIBEVENT_HOME, like so:
  `export LIBEVENT_HOME=<value of DISTILLERY_EXTERN_DIR from 'make info' in your Distillery directory>`
 
-e.g.
+  e.g.
 
  `export LIBEVENT_HOME=/usr/local/ccnx/dependencies/build`
 
