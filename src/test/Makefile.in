@@ -99,7 +99,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_event.m4 \
 	$(top_srcdir)/m4/ax_lib_longbow.m4 \
 	$(top_srcdir)/m4/ax_lib_parc.m4 \
 	$(top_srcdir)/m4/ax_lib_ccnx.m4 \
-	$(top_srcdir)/m4/ax_set_version.m4 \
+	$(top_srcdir)/m4/ax_release_version.m4 \
 	$(top_srcdir)/m4/ax_debug_option.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -439,6 +439,7 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
+RELEASE_VERSION = @RELEASE_VERSION@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@

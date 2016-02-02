@@ -29,7 +29,6 @@
  * @copyright 2014-2015, Xerox Corporation (Xerox)and Palo Alto Research Center (PARC).  All rights reserved.
  */
 
-#include <config.h>
 #include <strings.h>
 #include <stdio.h>
 

@@ -21,7 +21,6 @@ autom4te.cache
 .deps
 config.status
 config.log
-Makefile
 config.h
 
 # Xcode
