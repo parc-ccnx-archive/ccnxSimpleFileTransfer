@@ -27,7 +27,9 @@ REQUIREMENTS
 ------------
 
 The CCNx-Tutorial-Demo needs the Distillery CCNx distribution installed on the
-system. Please download and install Distillery. [https://www.ccnx.org/download/] (https://www.ccnx.org/download/)
+system. Please install the CCNx Distillery by downloading it from github and
+building it. It can be found here: https://github.com/PARC/CCNx_Distillery 
+
 
 Obtaining CCNx Tutorial
 -----------------------
@@ -38,15 +40,17 @@ You can obtain the CCNx Tutorial code by downloading it from [github] (https://g
 Building and Running
 --------------------
 
-To run the tutorial programs you will need the CCN forwarder (metis) running.
-Assuming you've unpacked the Distillery tarball into the default location
-(`/usr/local/ccnx/`), `/usr/local/`, Metis is installed with the rest of the CCNx
-software in `/usr/local/ccnx/bin`.
+To run the tutorial programs you will need a CCN forwarder (metis or athena) running.
+We'll use metis for this example, but either would work.
 
-To fully run the tutorial, you will need to run the `metis_daemon`, then the
-`tutorial_Server` (to serve files) and then the `tutorial_Client` to access the
-server.   It is recommended that you run the `metis_daemon`, `tutorial_Server`
-and `tutorial_Client` in different windows.
+
+Start metis by running 'metis_daemon -c 0', then the `tutorial_Server` (to serve files) 
+and then the `tutorial_Client` to access the server.   It is recommended that you run 
+the `metis_daemon`, `tutorial_Server` and `tutorial_Client` in different windows.
+
+It is also recommended you run metis_daemon with the '-c 0' option to disable the cache
+on the forwarder. This makes experimenting more predictable, as all Interests will make it
+through to the tutorial_Server. 
 
 Compiling the tutorial:
 
@@ -58,12 +62,14 @@ Compiling the tutorial:
 `$ ./configure --prefix=$HOME/ccnx`.  
 The `--prefix=` argument specifies the destination directory if you run
  `make install`
+   If necessary, you can also specify the locations of libraries on the configure line, like so:
+  ./configure  --with-libevent=/usr/local/ccnx/dependencies/build --with-libssl=/usr/local/ccnx/dependencies/build
 
-3. Compile the tutorial, setting the `LD_RUN_PATH` for the compiled executables:  
+3. Compile the tutorial.
 `$ make`  
 
 4. At this point, the compiled binaries for `tutorial_Client` and the
-`tutorial_Server` can be found in the `tutorial/src` directory.
+`tutorial_Server` should be built.
 
 5. Install the tutorial binaries to the specified prefix in the
 configure step (eg `$HOME/ccn`). You will then be able to find the binaries in
@@ -71,7 +77,7 @@ the bin directory (eg `$HOME/ccn/bin`)
 `make install`
 
 6. Start the CCNx forwarder, `metis_daemon`:  
-`$ /usr/local/ccnx/bin/metis_daemon &`
+`$ /usr/local/ccnx/bin/metis_daemon -c 0&`
 
 7. Running the tutorial_Server and tutorial_Client:
   Start the tutorial_Server, giving it a directory path as an argument.  
