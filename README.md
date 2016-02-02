@@ -44,11 +44,11 @@ To run the tutorial programs you will need a CCN forwarder (metis or athena) run
 We'll use metis for this example, but either would work.
 
 
-Start metis by running 'metis_daemon -c 0', then the `tutorial_Server` (to serve files) 
+Start metis by running 'metis_daemon --capacity 0', then the `tutorial_Server` (to serve files) 
 and then the `tutorial_Client` to access the server.   It is recommended that you run 
 the `metis_daemon`, `tutorial_Server` and `tutorial_Client` in different windows.
 
-It is also recommended you run metis_daemon with the '-c 0' option to disable the cache
+It is also recommended you run metis_daemon with the '--capacity 0' option to disable the cache
 on the forwarder. This makes experimenting more predictable, as all Interests will make it
 through to the tutorial_Server. 
 
@@ -66,11 +66,9 @@ it might look like this:
 `$ make`  
 
 If 'make' has trouble finding libraries, such as libevent, you can also export LIBEVENT_HOME, like so:
-
-❯ export LIBEVENT_HOME=<value of DISTILLERY_EXTERN_DIR from 'make info' in your Distillery directory>
-
+ `export LIBEVENT_HOME=<value of DISTILLERY_EXTERN_DIR from 'make info' in your Distillery directory>`
 e.g.
-❯ export LIBEVENT_HOME=/usr/local/ccnx/dependencies/build
+ `export LIBEVENT_HOME=/usr/local/ccnx/dependencies/build`
 
 4. At this point, the compiled binaries for `tutorial_Client` and the
 `tutorial_Server` should be built.
@@ -81,7 +79,7 @@ the bin directory (eg `$HOME/ccnx/bin`)
 `make install`
 
 6. Start the CCNx forwarder, `metis_daemon`:  
-`$hOME/ccnx/bin/metis_daemon -c 0&`
+`$HOME/ccnx/bin/metis_daemon --capacity 0&`
 
 7. Running the tutorial_Server and tutorial_Client:
   Start the tutorial_Server, giving it a directory path as an argument.  
@@ -90,7 +88,7 @@ the bin directory (eg `$HOME/ccnx/bin`)
 8.  In another window, run the tutorial_Client to retrieve the list of files
   available from the tutorial_Server. Do not run the tutorial_Client from the
   same directory you are serving files from.  
- ` $HOME/ccnx/bin/tutorial_Client list ` Will return a list of files from the tutorial_Server  
+  `$HOME/ccnx/bin/tutorial_Client list ` Will return a list of files from the tutorial_Server  
   Or, use the tutorial_Client to fetch a file from the tutorial_Server. 
   `$HOME/ccnx/bin/tutorial_Client fetch <filename>`    
   Will fetch the specified file
