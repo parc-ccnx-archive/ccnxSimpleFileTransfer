@@ -1,19 +1,15 @@
-:q
-git CCN-Tutorial
+CCN-Tutorial
 =================
 
-A simple file transfer server and client application for CCNx built on the Portal API.
-It's intentionally skeletal.
+A simple file transfer server and client application for CCNx built on the Portal API. 
 
 [CCNx Tutorial main page](https://github.com/PARC/ccnx-tutorial)   
 [CCNx.org](https://www.ccnx.org/)
 
 
-
 This is the CCN Tutorial Demo, a very simple tutorial demonstrating
-applications using the CCNx Portal API, the CCN Software Stack and the CCN
-Metis Forwarder. It includes a set of programs, with source code, to serve
-files and retrieve files.
+an application using the CCNx Portal API, the CCN Software Stack and the CCN Metis Forwarder.  It includes a set of programs, with source code, to serve
+files and retrieve files. Files are transferred using a basic 'chunked' protocol.
 
 The point of the tutorial is to demonstrate how to use the CCNx Portal API.
 With this as an example, you should be able to understand how you could apply
@@ -28,14 +24,9 @@ REQUIREMENTS
 ------------
 
 The CCNx-Tutorial-Demo needs the Distillery CCNx distribution installed on the
-system. Please install the CCNx Distillery by downloading it from github and
-building it. It can be found here: https://github.com/PARC/CCNx_Distillery 
+system. Please install the [CCNx Distillery](  https://github.com/PARC/CCNx_Distillery) by downloading it from GitHub, [here]( https://github.com/PARC/CCNx_Distillery), and
+building it according to the instructions there.
 
-
-Obtaining CCNx Tutorial
------------------------
-
-You can obtain the CCNx Tutorial code by downloading it from [github] (https://github.com/PARC/ccnx-tutorial).
 
 
 Building and Running
@@ -66,12 +57,12 @@ it might look like this:
 3. Compile the tutorial.
 `$ make`  
 
-If 'make' has trouble finding libraries, such as libevent, you can also export LIBEVENT_HOME, like so:
- `export LIBEVENT_HOME=<value of DISTILLERY_EXTERN_DIR from 'make info' in your Distillery directory>`
+    If 'make' has trouble finding libraries, such as libevent, you can also export LIBEVENT_HOME, like so: 
 
-  e.g.
+    * `export LIBEVENT_HOME=<value of DISTILLERY_EXTERN_DIR from 'make info' in your Distillery directory>`
 
- `export LIBEVENT_HOME=/usr/local/ccnx/dependencies/build`
+    * e.g.  `export LIBEVENT_HOME=/usr/local/ccnx/dependencies/build`
+
 
 4. At this point, the compiled binaries for `tutorial_Client` and the
 `tutorial_Server` should be built.
@@ -127,6 +118,5 @@ LICENSE
 -------
 
 This software is licensed under the BSD License.  See LICENSE File.
-
 
 
