@@ -117,6 +117,6 @@ For any questions please use the CCNx mailing list.  ccnx@ccnx.org
 LICENSE
 -------
 
-This software is licensed under the BSD License.  See LICENSE File.
+This software is licensed under the PARC Software License. See LICENSE File.
 
 
