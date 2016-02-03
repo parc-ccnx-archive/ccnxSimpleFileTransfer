@@ -104,8 +104,7 @@ the bin directory (eg `$HOME/ccnx/bin`)
 
 If you have any problems with the system, please discuss them on the developer 
 mailing list:  `ccnx@ccnx.org`.  If the problem is not resolved via mailing list 
-discussion, you can file tickets in our 
-[issue tracker] (https://csltracker.parc.com/).
+discussion, you can file tickets in the issue tracker.
 
 
 CONTACT
