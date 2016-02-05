@@ -34,7 +34,7 @@ CC=gcc -O2 -std=c99
 tutorial_Client: tutorial_Client.c tutorial_Common.c tutorial_About.c tutorial_FileIO.c
 	${CC} $? ${CFLAGS} -o $@
 
-tutorial_Server: tutorial_Server.c tutorial_Common.c  tutorial_FileIO.c tutorial_About.c
+tutorial_Server: tutorial_Server.c tutorial_Common.c tutorial_FileIO.c tutorial_About.c
 	${CC} $? ${CFLAGS} -o $@
 
 check:
