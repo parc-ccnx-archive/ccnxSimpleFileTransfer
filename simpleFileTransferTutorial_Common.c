@@ -30,8 +30,8 @@
  */
 #include <stdio.h>
 
-#include "tutorial_Common.h"
-#include "tutorial_About.h"
+#include "simpleFileTransferTutorial_Common.h"
+#include "simpleFileTransferTutorial_About.h"
 
 #include <LongBow/runtime.h>
 

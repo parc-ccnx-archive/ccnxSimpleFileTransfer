@@ -29,8 +29,8 @@
  * @copyright 2014-2015, Xerox Corporation (Xerox)and Palo Alto Research Center (PARC).  All rights reserved.
  */
 
-#ifndef tutorial_Common_h
-#define tutorial_Common_h
+#ifndef simpleFileTransferTutorial_Common_h
+#define simpleFileTransferTutorial_Common_h
 
 #include <stdint.h>
 
@@ -41,7 +41,7 @@
 #include <ccnx/api/ccnx_Portal/ccnx_Portal.h>
 
 /**
- * See tutorial_Common.h for the initilization of these constants.
+ * See simpleFileTransferTutorial_Common.h for the initilization of these constants.
  */
 
 /**
@@ -145,4 +145,4 @@ char *tutorialCommon_CreateCommandStringFromName(const CCNxName *name, const CCN
 int tutorialCommon_processCommandLineArguments(int argc, char **argv,
                                                int *commandArgCount, char **commandArgs,
                                                bool *needToShowUsage, bool *shouldExit);
-#endif // tutorial_Common.h
+#endif // simpleFileTransferTutorial_Common.h

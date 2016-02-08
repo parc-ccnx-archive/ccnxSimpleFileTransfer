@@ -29,8 +29,8 @@
  * @copyright 2014-2015, Xerox Corporation (Xerox)and Palo Alto Research Center (PARC).  All rights reserved.
  */
 
-#ifndef tutorial_FileIO_h
-#define tutorial_FileIO_h
+#ifndef simpleFileTransferTutorial_FileIO_h
+#define simpleFileTransferTutorial_FileIO_h
 
 #include <parc/algol/parc_Buffer.h>
 
@@ -97,4 +97,4 @@ bool tutorialFileIO_DeleteFile(const char *fileName);
  * @param dirName A pointer to a string containing the name of the directory to inspect.
  */
 PARCBuffer *tutorialFileIO_CreateDirectoryListing(const char *dirName);
-#endif // tutorial_FileIO_h
+#endif // simpleFileTransferTutorial_FileIO_h

@@ -36,8 +36,8 @@
 #include <parc/algol/parc_Memory.h>
 #include <parc/algol/parc_BufferComposer.h>
 
-#include "tutorial_FileIO.h"
-#include "tutorial_Common.h"
+#include "simpleFileTransferTutorial_FileIO.h"
+#include "simpleFileTransferTutorial_Common.h"
 
 PARCBuffer *
 tutorialFileIO_GetFileChunk(const char *fileName, size_t chunkSize, uint64_t chunkNum)

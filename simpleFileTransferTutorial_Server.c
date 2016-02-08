@@ -32,9 +32,9 @@
 #include <strings.h>
 #include <stdio.h>
 
-#include "tutorial_Common.h"
-#include "tutorial_FileIO.h"
-#include "tutorial_About.h"
+#include "simpleFileTransferTutorial_Common.h"
+#include "simpleFileTransferTutorial_FileIO.h"
+#include "simpleFileTransferTutorial_About.h"
 
 #include <LongBow/runtime.h>
 
@@ -307,7 +307,7 @@ _receiveAndAnswerInterests(CCNxPortal *portal, const CCNxName *domainPrefix, con
 }
 
 /**
- * Using the CCNxPortal API, listen for and respond to Interests matching our domain prefix (as defined in tutorial_Common.c).
+ * Using the CCNxPortal API, listen for and respond to Interests matching our domain prefix (as defined in simpleFileTransferTutorial_Common.c).
  * The specified directoryPath is the location of the directory from which file and listing responses will originate.
  *
  * @param [in] directoryPath A string containing the path to the directory being served.
@@ -328,7 +328,7 @@ _serveDirectory(const char *directoryPath)
     CCNxName *domainPrefix = ccnxName_CreateFromURI(tutorialCommon_DomainPrefix);
 
     if (ccnxPortal_Listen(portal, domainPrefix, 365 * 86400, CCNxStackTimeout_Never)) {
-        printf("tutorial_Server: now serving files from %s\n", directoryPath);
+        printf("simpleFileTransferTutorial_Server: now serving files from %s\n", directoryPath);
         result = _receiveAndAnswerInterests(portal, domainPrefix, directoryPath);
     }
 

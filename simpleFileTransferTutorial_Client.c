@@ -31,9 +31,9 @@
 #include <stdio.h>
 #include <strings.h>
 
-#include "tutorial_Common.h"
-#include "tutorial_FileIO.h"
-#include "tutorial_About.h"
+#include "simpleFileTransferTutorial_Common.h"
+#include "simpleFileTransferTutorial_FileIO.h"
+#include "simpleFileTransferTutorial_About.h"
 
 #include <LongBow/runtime.h>
 
@@ -185,7 +185,7 @@ _receiveFileChunk(const char *fileName, const PARCBuffer *payload, uint64_t chun
 }
 
 /**
- * Receive a ContentObject message that comes back from the tutorial_Server in response to an Interest we sent.
+ * Receive a ContentObject message that comes back from the simpleFileTransferTutorial_Server in response to an Interest we sent.
  * This message will be a chunk of the requested content, and should be received in ordered sequence.
  * Depending on the CCNxName in the content object, we hand it off to either _receiveFileChunk() or
  * _receiveDirectoryListingChunk() to process.
@@ -220,7 +220,7 @@ _receiveContentObject(CCNxContentObject *contentObject, const CCNxName *domainPr
         _receiveFileChunk(fileName, payload, chunkNumber, finalChunkNumberSpecifiedByServer);
         parcMemory_Deallocate((void **) &fileName);
     } else {
-        printf("tutorial_Client: Unknown command: %s\n", command);
+        printf("simpleFileTransferTutorial_Client: Unknown command: %s\n", command);
     }
 
     parcMemory_Deallocate((void **) &command);
@@ -362,7 +362,7 @@ _displayUsage(char *programName)
     printf(" forwarder (e.g. Metis) must also be running.\n\n");
 
     printf("Usage: %s  [-h] [-v] [ list | fetch <filename> ]\n", programName);
-    printf("  '%s list' will list the files in the directory served by tutorial_Server\n", programName);
+    printf("  '%s list' will list the files in the directory served by simpleFileTransferTutorial_Server\n", programName);
     printf("  '%s fetch <filename>' will fetch the specified filename\n", programName);
     printf("  '%s -v' will show the tutorial demo code version\n", programName);
     printf("  '%s -h' will show this help\n\n", programName);
