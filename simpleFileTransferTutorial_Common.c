@@ -157,7 +157,7 @@ simpleFileTransferTutorialCommon_CreateCommandStringFromName(const CCNxName *nam
 }
 
 int
-simpleFileTransferTutorialCommon_processCommandLineArguments(int argc, char **argv,
+simpleFileTransferTutorialCommon_ProcessCommandLineArguments(int argc, char **argv,
                                                              int *commandArgCount, char **commandArgs,
                                                              bool *needToShowUsage, bool *shouldExit)
 {

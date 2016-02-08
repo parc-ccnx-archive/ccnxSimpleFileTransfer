@@ -148,7 +148,7 @@ char *simpleFileTransferTutorialCommon_CreateCommandStringFromName(const CCNxNam
  *
  * @return EXIT_FAILURE if an unexpected '-' option was encountered. EXIT_SUCCESS otherwise.
  */
-int simpleFileTransferTutorialCommon_processCommandLineArguments(int argc, char **argv,
+int simpleFileTransferTutorialCommon_ProcessCommandLineArguments(int argc, char **argv,
                                                                  int *commandArgCount, char **commandArgs,
                                                                  bool *needToShowUsage, bool *shouldExit);
 #endif // simpleFileTransferTutorialCommon.h

@@ -376,7 +376,8 @@ main(int argc, char *argv[argc])
     bool needToShowUsage = false;
     bool shouldExit = false;
 
-    status = simpleFileTransferTutorialCommon_processCommandLineArguments(argc, argv, &commandArgCount, commandArgs, &needToShowUsage, &shouldExit);
+    status = simpleFileTransferTutorialCommon_ProcessCommandLineArguments(argc, argv, &commandArgCount, commandArgs,
+                                                                          &needToShowUsage, &shouldExit);
 
     if (needToShowUsage) {
         _displayUsage(argv[0]);

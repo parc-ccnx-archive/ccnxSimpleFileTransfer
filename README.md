@@ -17,8 +17,8 @@ the API to your own application.
 
 After building, the demo consists of 2 programs:
 
-* `tutorial_Server`: Serves files out of a directory.
-* `tutorial_Client`: Lists and retrieves files from the server.
+* `simpleFileTransferTutorial_Server`: Serves files out of a directory.
+* `simpleFileTransferTutorial_Client`: Lists and retrieves files from the server.
 
 REQUIREMENTS
 ------------
@@ -36,13 +36,13 @@ To run the tutorial programs you will need a CCN forwarder (metis or athena) run
 We'll use metis for this example, but either would work.
 
 
-Start metis by running 'metis_daemon --capacity 0', then the `tutorial_Server` (to serve files) 
-and then the `tutorial_Client` to access the server.   It is recommended that you run 
-the `metis_daemon`, `tutorial_Server` and `tutorial_Client` in different windows.
+Start metis by running 'metis_daemon --capacity 0', then the `simpleFileTransferTutorial_Server` (to serve files) 
+and then the `simpleFileTransferTutorial_Client` to access the server.   It is recommended that you run 
+the `metis_daemon`, `simpleFileTransferTutorial_Server` and `simpleFileTransferTutorial_Client` in different windows.
 
 It is also recommended you run metis_daemon with the '--capacity 0' option to disable the cache
 on the forwarder. This makes experimenting more predictable, as all Interests will make it
-through to the tutorial_Server. 
+through to the simpleFileTransferTutorial_Server. 
 
 Compiling the tutorial:
 
@@ -64,8 +64,8 @@ it might look like this:
     * e.g.  `export LIBEVENT_HOME=/usr/local/ccnx/dependencies/build`
 
 
-4. At this point, the compiled binaries for `tutorial_Client` and the
-`tutorial_Server` should be built.
+4. At this point, the compiled binaries for `simpleFileTransferTutorial_Client` and the
+`simpleFileTransferTutorial_Server` should be built.
 
 5. Optionally install the tutorial binaries to the specified prefix in the
 configure step (eg `$HOME/ccnx`). You will then be able to find the binaries in
@@ -75,27 +75,27 @@ the bin directory (eg `$HOME/ccnx/bin`)
 6. Start the CCNx forwarder, `metis_daemon`:  
 `$HOME/ccnx/bin/metis_daemon --capacity 0&`
 
-7. Running the tutorial_Server and tutorial_Client:
-  Start the tutorial_Server, giving it a directory path as an argument.  
-  `$HOME/ccnx/bin/tutorial_Server /path/to/a/directory/with/files/to/serve`
+7. Running the simpleFileTransferTutorial_Server and simpleFileTransferTutorial_Client:
+  Start the simpleFileTransferTutorial_Server, giving it a directory path as an argument.  
+  `$HOME/ccnx/bin/simpleFileTransferTutorial_Server /path/to/a/directory/with/files/to/serve`
 
-8.  In another window, run the tutorial_Client to retrieve the list of files
-  available from the tutorial_Server. Do not run the tutorial_Client from the
+8.  In another window, run the simpleFileTransferTutorial_Client to retrieve the list of files
+  available from the simpleFileTransferTutorial_Server. Do not run the simpleFileTransferTutorial_Client from the
   same directory you are serving files from.  
-  `$HOME/ccnx/bin/tutorial_Client list ` Will return a list of files from the tutorial_Server  
-  Or, use the tutorial_Client to fetch a file from the tutorial_Server. 
-  `$HOME/ccnx/bin/tutorial_Client fetch <filename>`    
+  `$HOME/ccnx/bin/simpleFileTransferTutorial_Client list ` Will return a list of files from the simpleFileTransferTutorial_Server  
+  Or, use the simpleFileTransferTutorial_Client to fetch a file from the simpleFileTransferTutorial_Server. 
+  `$HOME/ccnx/bin/simpleFileTransferTutorial_Client fetch <filename>`    
   Will fetch the specified file
 
 ## Notes: ##
 
-- The `tutorial_Client` and `tutorial_Server` automatically create keystore files in
+- The `simpleFileTransferTutorial_Client` and `simpleFileTransferTutorial_Server` automatically create keystore files in
   their working directory.
 
-- If you run `tutorial_Client` on the same directory that the `tutorial_Server` is
+- If you run `simpleFileTransferTutorial_Client` on the same directory that the `simpleFileTransferTutorial_Server` is
   serving files from you will run into problems when you try to fetch a file.
 
-- `tutorial_Client` and tutorial_Server require `metis_daemon` to be running.
+- `simpleFileTransferTutorial_Client` and simpleFileTransferTutorial_Server require `metis_daemon` to be running.
 
 - The makefiles automatically set an LD_RUN_PATH variable so that you don't
   have to set it. They use the paths found by the configure script as default
