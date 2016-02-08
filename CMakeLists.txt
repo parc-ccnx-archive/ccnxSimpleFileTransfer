@@ -25,16 +25,14 @@ set(TUTORIAL_LIBRARIES
        longbow-ansiterm)
 
 add_executable(simpleFileTransferTutorial_Server
-               simpleFileTransferTutorial_About.c 
-               simpleFileTransferTutorial_Common.c 
                simpleFileTransferTutorial_Server.c
-               simpleFileTransferTutorial_FileIO.c)
+        simpleFileTransferTutorial_Common.c
+        simpleFileTransferTutorial_FileIO.c)
     
 add_executable(simpleFileTransferTutorial_Client 
-               simpleFileTransferTutorial_About.c 
-               simpleFileTransferTutorial_Common.c 
                simpleFileTransferTutorial_Client.c
-               simpleFileTransferTutorial_FileIO.c)
+        simpleFileTransferTutorial_Common.c
+        simpleFileTransferTutorial_FileIO.c)
 
 target_link_libraries(simpleFileTransferTutorial_Client ${TUTORIAL_LIBRARIES})
 target_link_libraries(simpleFileTransferTutorial_Server ${TUTORIAL_LIBRARIES})

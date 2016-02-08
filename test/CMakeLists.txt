@@ -30,11 +30,6 @@ macro(AddTest testFile)
   add_test(${ARGV0} ${ARGV0})
 endmacro(AddTest)
 
-
-
-#add_executable(test_simpleFileTransferTutorial_FileIO
-#               test_simpleFileTransferTutorial_FileIO.c)
-
 AddTest(test_simpleFileTransferTutorial_FileIO)
     
 
