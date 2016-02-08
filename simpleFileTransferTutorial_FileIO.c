@@ -44,10 +44,10 @@ simpleFileTransferTutorialFileIO_GetFileChunk(const char *fileName, size_t chunk
 {
     FILE *file = fopen(fileName, "r");
 
-    assertNotNull(file, "Could not open file '%s' - stopping.", fileName);
+    // NOTE: Opening and seeking in the file for each chunk is NOT a very efficient way to
+    //       retrieve chunks. Consider keeping the file open, or caching in memory, or...
 
-    // When PARCFileInputStream has a Seek() function, consider using it instead of
-    // the following approach.
+    assertNotNull(file, "Could not open file '%s' - stopping.", fileName);
 
     // Seek to the location of the desired chunk in the file.
     assertTrue(fseek(file, chunkSize * chunkNum, SEEK_SET) == 0, "Could not seek to desired chunk");

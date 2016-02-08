@@ -58,9 +58,9 @@
 static CCNxPortalFactory *
 _setupConsumerPortalFactory(void)
 {
-    const char *keystoreName = "tutorialClient_keystore";
+    const char *keystoreName = "client.keystore";
     const char *keystorePassword = "keystore_password";
-    const char *subjectName = "tutorialClient";
+    const char *subjectName = "SimpleFileTransferTutorial Client";
 
     return simpleFileTransferTutorialCommon_SetupPortalFactory(keystoreName, keystorePassword, subjectName);
 }
