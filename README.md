@@ -1,15 +1,15 @@
-CCN-Tutorial
+CCNx 1.0 Simple File Transfer Tutorial
 =================
 
 A simple file transfer server and client application for CCNx built on the Portal API. 
 
-[CCNx Tutorial main page](https://github.com/PARC/ccnx-tutorial)   
+[CCNx Simple File Transfer main page](https://github.com/PARC/ccnx-tutorial)   
 [CCNx.org](https://www.ccnx.org/)
 
 
-This is the CCN Tutorial Demo, a very simple tutorial demonstrating
-an application using the CCNx Portal API, the CCN Software Stack and the CCN Metis Forwarder.  It includes a set of programs, with source code, to serve
-files and retrieve files. Files are transferred using a basic 'chunked' protocol.
+This is the CCNx Simple File Transfer tutorial (formerly CCNx Tutorial Demo), a very simple tutorial demonstrating
+an application using the CCNx Portal API, the CCN Software Stack and the CCN Metis Forwarder.  It includes a set 
+of programs, with source code, to serve files and retrieve files. Files are transferred using a basic 'chunked' protocol.
 
 The point of the tutorial is to demonstrate how to use the CCNx Portal API.
 With this as an example, you should be able to understand how you could apply
