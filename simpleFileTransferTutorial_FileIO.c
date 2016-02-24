@@ -36,18 +36,18 @@
 #include <parc/algol/parc_Memory.h>
 #include <parc/algol/parc_BufferComposer.h>
 
-#include "tutorial_FileIO.h"
-#include "tutorial_Common.h"
+#include "simpleFileTransferTutorial_FileIO.h"
+#include "simpleFileTransferTutorial_Common.h"
 
 PARCBuffer *
-tutorialFileIO_GetFileChunk(const char *fileName, size_t chunkSize, uint64_t chunkNum)
+simpleFileTransferTutorialFileIO_GetFileChunk(const char *fileName, size_t chunkSize, uint64_t chunkNum)
 {
     FILE *file = fopen(fileName, "r");
 
-    assertNotNull(file, "Could not open file '%s' - stopping.", fileName);
+    // NOTE: Opening and seeking in the file for each chunk is NOT a very efficient way to
+    //       retrieve chunks. Consider keeping the file open, or caching in memory, or...
 
-    // When PARCFileInputStream has a Seek() function, consider using it instead of
-    // the following approach.
+    assertNotNull(file, "Could not open file '%s' - stopping.", fileName);
 
     // Seek to the location of the desired chunk in the file.
     assertTrue(fseek(file, chunkSize * chunkNum, SEEK_SET) == 0, "Could not seek to desired chunk");
@@ -78,7 +78,7 @@ tutorialFileIO_GetFileChunk(const char *fileName, size_t chunkSize, uint64_t chu
 }
 
 size_t
-tutorialFileIO_AppendFileChunk(const char *fileName, const PARCBuffer *chunk)
+simpleFileTransferTutorialFileIO_AppendFileChunk(const char *fileName, const PARCBuffer *chunk)
 {
     size_t numBytesWritten = 0;
 
@@ -99,13 +99,13 @@ tutorialFileIO_AppendFileChunk(const char *fileName, const PARCBuffer *chunk)
 }
 
 bool
-tutorialFileIO_IsFileAvailable(const char *filePath)
+simpleFileTransferTutorialFileIO_IsFileAvailable(const char *filePath)
 {
     return (access(filePath, F_OK | R_OK) == 0);
 }
 
 size_t
-tutorialFileIO_GetFileSize(const char *filePath)
+simpleFileTransferTutorialFileIO_GetFileSize(const char *filePath)
 {
     size_t fileSize = 0;
 
@@ -122,7 +122,7 @@ tutorialFileIO_GetFileSize(const char *filePath)
 }
 
 PARCBuffer *
-tutorialFileIO_CreateDirectoryListing(const char *directoryName)
+simpleFileTransferTutorialFileIO_CreateDirectoryListing(const char *directoryName)
 {
     DIR *directory = opendir(directoryName);
 
@@ -144,9 +144,9 @@ tutorialFileIO_CreateDirectoryListing(const char *directoryName)
                 char *fullFilePathString = parcBuffer_ToString(fileNameBuffer);
                 parcBuffer_Release(&fileNameBuffer);
 
-                if (tutorialFileIO_IsFileAvailable(fullFilePathString)) {
+                if (simpleFileTransferTutorialFileIO_IsFileAvailable(fullFilePathString)) {
                     parcBufferComposer_Format(directoryListing, "  %s  (%zu bytes)\n",
-                                              entry->d_name, tutorialFileIO_GetFileSize(fullFilePathString));
+                                              entry->d_name, simpleFileTransferTutorialFileIO_GetFileSize(fullFilePathString));
                 }
 
                 parcBufferComposer_Release(&fullFilePath);
@@ -172,7 +172,7 @@ tutorialFileIO_CreateDirectoryListing(const char *directoryName)
 }
 
 bool
-tutorialFileIO_DeleteFile(const char *fileName)
+simpleFileTransferTutorialFileIO_DeleteFile(const char *fileName)
 {
     // Unlink the file. Return true if succesful, false if not.
     // False could mean the file didn't originally exist.

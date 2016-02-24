@@ -31,9 +31,8 @@
 #include <stdio.h>
 #include <strings.h>
 
-#include "tutorial_Common.h"
-#include "tutorial_FileIO.h"
-#include "tutorial_About.h"
+#include "simpleFileTransferTutorial_Common.h"
+#include "simpleFileTransferTutorial_FileIO.h"
 
 #include <LongBow/runtime.h>
 
@@ -59,11 +58,11 @@
 static CCNxPortalFactory *
 _setupConsumerPortalFactory(void)
 {
-    const char *keystoreName = "tutorialClient_keystore";
+    const char *keystoreName = "client.keystore";
     const char *keystorePassword = "keystore_password";
-    const char *subjectName = "tutorialClient";
+    const char *subjectName = "SimpleFileTransferTutorial Client";
 
-    return tutorialCommon_SetupPortalFactory(keystoreName, keystorePassword, subjectName);
+    return simpleFileTransferTutorialCommon_SetupPortalFactory(keystoreName, keystorePassword, subjectName);
 }
 
 /**
@@ -118,13 +117,13 @@ _assembleFile(const char *fileName, const PARCBuffer *payload, uint64_t chunkNum
 {
     if (chunkNumber == 0) {
         // If we're the first chunk (chunk #0), then make sure we're starting with an empty file.
-        tutorialFileIO_DeleteFile(fileName);
+        simpleFileTransferTutorialFileIO_DeleteFile(fileName);
     }
 
-    // Note that the tutorialFileIO_AppendFileChunk() function should be replaced with something that keeps
+    // Note that the simpleFileTransferTutorialFileIO_AppendFileChunk() function should be replaced with something that keeps
     // an open file pointer instead of repeatedly re-opening it. This method simply opens (possibly creating)
     // the file and appends the specified payload). It is not an efficient implementation.
-    tutorialFileIO_AppendFileChunk(fileName, payload);
+    simpleFileTransferTutorialFileIO_AppendFileChunk(fileName, payload);
 
     return (chunkNumber == finalChunkNumber); // true, if we just wrote the final chunk
 }
@@ -185,7 +184,7 @@ _receiveFileChunk(const char *fileName, const PARCBuffer *payload, uint64_t chun
 }
 
 /**
- * Receive a ContentObject message that comes back from the tutorial_Server in response to an Interest we sent.
+ * Receive a ContentObject message that comes back from the simpleFileTransferTutorial_Server in response to an Interest we sent.
  * This message will be a chunk of the requested content, and should be received in ordered sequence.
  * Depending on the CCNxName in the content object, we hand it off to either _receiveFileChunk() or
  * _receiveDirectoryListingChunk() to process.
@@ -200,27 +199,27 @@ _receiveContentObject(CCNxContentObject *contentObject, const CCNxName *domainPr
 {
     CCNxName *contentName = ccnxContentObject_GetName(contentObject);
 
-    uint64_t chunkNumber = tutorialCommon_GetChunkNumberFromName(contentName);
+    uint64_t chunkNumber = simpleFileTransferTutorialCommon_GetChunkNumberFromName(contentName);
 
     // Get the number of the final chunk, as specified by the sender.
     uint64_t finalChunkNumberSpecifiedByServer = ccnxContentObject_GetFinalChunkNumber(contentObject);
 
     // Get the type of the incoming message. Was it a response to a fetch' or a 'list' command?
-    char *command = tutorialCommon_CreateCommandStringFromName(contentName, domainPrefix);
+    char *command = simpleFileTransferTutorialCommon_CreateCommandStringFromName(contentName, domainPrefix);
 
     // Process the payload.
     PARCBuffer *payload = ccnxContentObject_GetPayload(contentObject);
 
-    if (strncasecmp(command, tutorialCommon_CommandList, strlen(command)) == 0) {
+    if (strncasecmp(command, simpleFileTransferTutorialCommon_CommandList, strlen(command)) == 0) {
         // This is a chunk of the directory listing.
         _receiveDirectoryListingChunk(payload, chunkNumber, finalChunkNumberSpecifiedByServer);
-    } else if (strncasecmp(command, tutorialCommon_CommandFetch, strlen(command)) == 0) {
+    } else if (strncasecmp(command, simpleFileTransferTutorialCommon_CommandFetch, strlen(command)) == 0) {
         // This is a chunk of a file.
-        char *fileName = tutorialCommon_CreateFileNameFromName(contentName);
+        char *fileName = simpleFileTransferTutorialCommon_CreateFileNameFromName(contentName);
         _receiveFileChunk(fileName, payload, chunkNumber, finalChunkNumberSpecifiedByServer);
         parcMemory_Deallocate((void **) &fileName);
     } else {
-        printf("tutorial_Client: Unknown command: %s\n", command);
+        printf("simpleFileTransferTutorial_Client: Unknown command: %s\n", command);
     }
 
     parcMemory_Deallocate((void **) &command);
@@ -241,7 +240,7 @@ _receiveContentObject(CCNxContentObject *contentObject, const CCNxName *domainPr
 static CCNxInterest *
 _createInterest(const char *command, const char *targetName)
 {
-    CCNxName *interestName = ccnxName_CreateFromURI(tutorialCommon_DomainPrefix); // Start with the prefix. We append to this.
+    CCNxName *interestName = ccnxName_CreateFromURI(simpleFileTransferTutorialCommon_DomainPrefix); // Start with the prefix. We append to this.
 
     // Create a NameSegment for our command, which we will append after the prefix we just created.
     PARCBuffer *commandBuffer = parcBuffer_WrapCString((char *) command);
@@ -332,7 +331,7 @@ _executeUserCommand(const char *command, const char *targetName)
     // Send the Interest through the Portal, and wait for a response.
     CCNxMetaMessage *message = ccnxMetaMessage_CreateFromInterest(interest);
     if (ccnxPortal_Send(portal, message, CCNxStackTimeout_Never)) {
-        CCNxName *domainPrefix = ccnxName_CreateFromURI(tutorialCommon_DomainPrefix);  // e.g. 'lci:/ccnx/tutorial'
+        CCNxName *domainPrefix = ccnxName_CreateFromURI(simpleFileTransferTutorialCommon_DomainPrefix);  // e.g. 'lci:/ccnx/tutorial'
 
         result = _receiveResponseToIssuedInterest(portal, domainPrefix);
 
@@ -355,16 +354,15 @@ _executeUserCommand(const char *command, const char *targetName)
 static void
 _displayUsage(char *programName)
 {
-    printf("\n%s\n%s, %s\n\n", tutorialAbout_Version(), tutorialAbout_Name(), programName);
+    printf("\n%s, %s\n\n", simpleFileTransferTutorialCommon_TutorialName, programName);
 
     printf(" This example application can retrieve a specified file or the list of available files from\n");
     printf(" the tutorialServer application, which should be running when this application is used. A CCNx\n");
     printf(" forwarder (e.g. Metis) must also be running.\n\n");
 
     printf("Usage: %s  [-h] [-v] [ list | fetch <filename> ]\n", programName);
-    printf("  '%s list' will list the files in the directory served by tutorial_Server\n", programName);
+    printf("  '%s list' will list the files in the directory served by simpleFileTransferTutorial_Server\n", programName);
     printf("  '%s fetch <filename>' will fetch the specified filename\n", programName);
-    printf("  '%s -v' will show the tutorial demo code version\n", programName);
     printf("  '%s -h' will show this help\n\n", programName);
 }
 
@@ -378,7 +376,8 @@ main(int argc, char *argv[argc])
     bool needToShowUsage = false;
     bool shouldExit = false;
 
-    status = tutorialCommon_processCommandLineArguments(argc, argv, &commandArgCount, commandArgs, &needToShowUsage, &shouldExit);
+    status = simpleFileTransferTutorialCommon_ProcessCommandLineArguments(argc, argv, &commandArgCount, commandArgs,
+                                                                          &needToShowUsage, &shouldExit);
 
     if (needToShowUsage) {
         _displayUsage(argv[0]);
@@ -389,10 +388,10 @@ main(int argc, char *argv[argc])
     }
 
     if (commandArgCount == 2
-        && (strncmp(tutorialCommon_CommandFetch, commandArgs[0], strlen(commandArgs[0])) == 0)) {        // "fetch <filename>"
+        && (strncmp(simpleFileTransferTutorialCommon_CommandFetch, commandArgs[0], strlen(commandArgs[0])) == 0)) {        // "fetch <filename>"
         status = _executeUserCommand(commandArgs[0], commandArgs[1]) ? EXIT_SUCCESS : EXIT_FAILURE;
     } else if (commandArgCount == 1
-               && (strncmp(tutorialCommon_CommandList, commandArgs[0], strlen(commandArgs[0])) == 0)) {  // "list"
+               && (strncmp(simpleFileTransferTutorialCommon_CommandList, commandArgs[0], strlen(commandArgs[0])) == 0)) {  // "list"
         status = _executeUserCommand(commandArgs[0], NULL) ? EXIT_SUCCESS : EXIT_FAILURE;
     } else {
         status = EXIT_FAILURE;

@@ -29,8 +29,8 @@
  * @copyright 2014-2015, Xerox Corporation (Xerox)and Palo Alto Research Center (PARC).  All rights reserved.
  */
 
-#ifndef tutorial_FileIO_h
-#define tutorial_FileIO_h
+#ifndef simpleFileTransferTutorial_FileIO_h
+#define simpleFileTransferTutorial_FileIO_h
 
 #include <parc/algol/parc_Buffer.h>
 
@@ -45,7 +45,7 @@
  *
  * @return A newly created PARCBuffer containing the contents of the specified chunk.
  */
-PARCBuffer *tutorialFileIO_GetFileChunk(const char *fileName, size_t chunkSize, uint64_t chunkNumber);
+PARCBuffer *simpleFileTransferTutorialFileIO_GetFileChunk(const char *fileName, size_t chunkSize, uint64_t chunkNumber);
 
 /**
  * Given a PARCBuffer, append its contents to the file specified by the given fileName.
@@ -55,7 +55,7 @@ PARCBuffer *tutorialFileIO_GetFileChunk(const char *fileName, size_t chunkSize, 
  *
  * @return The number of bytes written to the file.
  */
-size_t tutorialFileIO_AppendFileChunk(const char *fileName, const PARCBuffer *chunk);
+size_t simpleFileTransferTutorialFileIO_AppendFileChunk(const char *fileName, const PARCBuffer *chunk);
 
 /**
  * Check if a file exists and is readable.
@@ -66,7 +66,7 @@ size_t tutorialFileIO_AppendFileChunk(const char *fileName, const PARCBuffer *ch
  * @return true If the file exists and is readable.
  * @return false If the file doesn't exist or is not readable.
  */
-bool tutorialFileIO_IsFileAvailable(const char *fileName);
+bool simpleFileTransferTutorialFileIO_IsFileAvailable(const char *fileName);
 
 /**
  * Return the size, in bytes, of the specified file.
@@ -75,7 +75,7 @@ bool tutorialFileIO_IsFileAvailable(const char *fileName);
  *
  * @return The size of the file, in bytes.
  */
-size_t tutorialFileIO_GetFileSize(const char *fileName);
+size_t simpleFileTransferTutorialFileIO_GetFileSize(const char *fileName);
 
 /**
  * Delete the file specified.
@@ -85,7 +85,7 @@ size_t tutorialFileIO_GetFileSize(const char *fileName);
  * @return true If the file was successfully deleted.
  * @return false If the file was not deleted.
  */
-bool tutorialFileIO_DeleteFile(const char *fileName);
+bool simpleFileTransferTutorialFileIO_DeleteFile(const char *fileName);
 
 /**
  * Return a PARCBuffer containing a string representing the list of files and their sizes in the directory
@@ -96,5 +96,5 @@ bool tutorialFileIO_DeleteFile(const char *fileName);
  *
  * @param dirName A pointer to a string containing the name of the directory to inspect.
  */
-PARCBuffer *tutorialFileIO_CreateDirectoryListing(const char *dirName);
-#endif // tutorial_FileIO_h
+PARCBuffer *simpleFileTransferTutorialFileIO_CreateDirectoryListing(const char *dirName);
+#endif // simpleFileTransferTutorial_FileIO_h
