@@ -37,6 +37,8 @@ add_executable(simpleFileTransferTutorial_Client
 target_link_libraries(simpleFileTransferTutorial_Client ${TUTORIAL_LIBRARIES})
 target_link_libraries(simpleFileTransferTutorial_Server ${TUTORIAL_LIBRARIES})
 
+install(TARGETS simpleFileTransferTutorial_Client RUNTIME DESTINATION bin)
+install(TARGETS simpleFileTransferTutorial_Server RUNTIME DESTINATION bin)
 
 add_subdirectory(test)
 
