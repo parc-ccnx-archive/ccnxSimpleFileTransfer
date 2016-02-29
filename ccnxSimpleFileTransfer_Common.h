@@ -29,8 +29,8 @@
  * @copyright 2014-2015, Xerox Corporation (Xerox)and Palo Alto Research Center (PARC).  All rights reserved.
  */
 
-#ifndef simpleFileTransferTutorialCommon_h
-#define simpleFileTransferTutorialCommon_h
+#ifndef ccnxSimpleFileTransferCommon_h
+#define ccnxSimpleFileTransferCommon_h
 
 #include <stdint.h>
 
@@ -41,31 +41,31 @@
 #include <ccnx/api/ccnx_Portal/ccnx_Portal.h>
 
 /**
- * See simpleFileTransferTutorialCommon.h for the initilization of these constants.
+ * See ccnxSimpleFileTransferCommon.h for the initilization of these constants.
  */
 
-extern const char *simpleFileTransferTutorialCommon_TutorialName;
+extern const char *ccnxSimpleFileTransferCommon_TutorialName;
 
 /**
  * The CCNx Name prefix we'll use for the tutorial.
  */
-extern const char *simpleFileTransferTutorialCommon_DomainPrefix;
+extern const char *ccnxSimpleFileTransferCommon_DomainPrefix;
 
 /**
  * The size of a chunk. We break CCNx Content payloads up into pieces of this size.
  * 1200 was chosen as a size that should prevent IP fragmentation of CCNx ContentObject Messages.
  */
-extern const uint32_t simpleFileTransferTutorialCommon_ChunkSize;
+extern const uint32_t ccnxSimpleFileTransferCommon_ChunkSize;
 
 /**
  * The string we use for the 'fetch' command.
  */
-extern const char *simpleFileTransferTutorialCommon_CommandFetch;
+extern const char *ccnxSimpleFileTransferCommon_CommandFetch;
 
 /**
  * The string we use for the 'list' command.
  */
-extern const char *simpleFileTransferTutorialCommon_CommandList;
+extern const char *ccnxSimpleFileTransferCommon_CommandList;
 
 
 /**
@@ -80,9 +80,9 @@ extern const char *simpleFileTransferTutorialCommon_CommandList;
  *
  * @return A new, randomly generated, PARCIdentity instance.
  */
-PARCIdentity *simpleFileTransferTutorialCommon_CreateAndGetIdentity(const char *keystoreName,
-                                                                    const char *keystorePassword,
-                                                                    const char *subjectName);
+PARCIdentity *ccnxSimpleFileTransferCommon_CreateAndGetIdentity(const char *keystoreName,
+                                                                const char *keystorePassword,
+                                                                const char *subjectName);
 
 /**
  * Initialize and return a new instance of CCNxPortalFactory. A randomly generated identity is
@@ -95,9 +95,9 @@ PARCIdentity *simpleFileTransferTutorialCommon_CreateAndGetIdentity(const char *
  *
  * @return A new instance of a CCNxPortalFactory initialized with a randomly created identity.
  */
-CCNxPortalFactory *simpleFileTransferTutorialCommon_SetupPortalFactory(const char *keystoreName,
-                                                                       const char *keystorePassword,
-                                                                       const char *subjectName);
+CCNxPortalFactory *ccnxSimpleFileTransferCommon_SetupPortalFactory(const char *keystoreName,
+                                                                   const char *keystorePassword,
+                                                                   const char *subjectName);
 
 /**
  * Given a CCNxName instance, return the numeric value of the chunk specified by the Name.
@@ -106,7 +106,7 @@ CCNxPortalFactory *simpleFileTransferTutorialCommon_SetupPortalFactory(const cha
  * @param [in] name A CCNxName instance from which to extract the chunk number.
  * @return The chunk number encoded in the supplied CCNxName instance.
  */
-uint64_t simpleFileTransferTutorialCommon_GetChunkNumberFromName(const CCNxName *name);
+uint64_t ccnxSimpleFileTransferCommon_GetChunkNumberFromName(const CCNxName *name);
 
 /**
  * Given a CCNxName instance, structured for this tutorial, return a string representation
@@ -117,7 +117,7 @@ uint64_t simpleFileTransferTutorialCommon_GetChunkNumberFromName(const CCNxName 
  * @param [in] name A CCNxName instance from which to extract the filename.
  * @return A C string representation of the filename encoded in the supplied CCNxName instance.
  */
-char *simpleFileTransferTutorialCommon_CreateFileNameFromName(const CCNxName *name);
+char *ccnxSimpleFileTransferCommon_CreateFileNameFromName(const CCNxName *name);
 
 /**
  * Given a CCNxName instance, structured for this tutorial, return a string representation
@@ -128,7 +128,7 @@ char *simpleFileTransferTutorialCommon_CreateFileNameFromName(const CCNxName *na
  * @param [in] name A CCNxName instance from which to extract the filename.
  * @return A C string representation of the filename encoded in the supplied CCNxName instance.
  */
-char *simpleFileTransferTutorialCommon_CreateCommandStringFromName(const CCNxName *name, const CCNxName *domainPrefix);
+char *ccnxSimpleFileTransferCommon_CreateCommandStringFromName(const CCNxName *name, const CCNxName *domainPrefix);
 
 /**
  * Process our command line arguments. If we're given '-h' or '-v', we handle them by displaying
@@ -148,7 +148,7 @@ char *simpleFileTransferTutorialCommon_CreateCommandStringFromName(const CCNxNam
  *
  * @return EXIT_FAILURE if an unexpected '-' option was encountered. EXIT_SUCCESS otherwise.
  */
-int simpleFileTransferTutorialCommon_ProcessCommandLineArguments(int argc, char **argv,
-                                                                 int *commandArgCount, char **commandArgs,
-                                                                 bool *needToShowUsage, bool *shouldExit);
-#endif // simpleFileTransferTutorialCommon.h
+int ccnxSimpleFileTransferCommon_ProcessCommandLineArguments(int argc, char **argv,
+                                                             int *commandArgCount, char **commandArgs,
+                                                             bool *needToShowUsage, bool *shouldExit);
+#endif // ccnxSimpleFileTransferCommon.h

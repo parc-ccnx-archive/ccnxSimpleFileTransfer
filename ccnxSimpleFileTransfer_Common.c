@@ -30,7 +30,7 @@
  */
 #include <stdio.h>
 
-#include "simpleFileTransferTutorial_Common.h"
+#include "ccnxSimpleFileTransfer_Common.h"
 
 #include <LongBow/runtime.h>
 
@@ -43,33 +43,33 @@
 /**
  * The name of this tutorial. This is what shows when you run the client or server with '-h'
  */
-const char *simpleFileTransferTutorialCommon_TutorialName = "CCNx 1.0 Simple File Transfer Tutorial";
+const char *ccnxSimpleFileTransferCommon_TutorialName = "CCNx 1.0 Simple File Transfer Tutorial";
 
 /**
  * The CCNx Name prefix we'll use for the tutorial.
  */
-const char *simpleFileTransferTutorialCommon_DomainPrefix = "lci:/ccnx/tutorial";
+const char *ccnxSimpleFileTransferCommon_DomainPrefix = "lci:/ccnx/tutorial";
 
 /**
  * The size of a chunk. We break CCNx Content payloads up into pieces of this size.
  * 1200 was chosen as a size that should prevent IP fragmentation of CCNx ContentObject Messages.
  */
-const uint32_t simpleFileTransferTutorialCommon_ChunkSize = 1200;
+const uint32_t ccnxSimpleFileTransferCommon_ChunkSize = 1200;
 
 /**
  * The string we use for the 'fetch' command.
  */
-const char *simpleFileTransferTutorialCommon_CommandFetch = "fetch";
+const char *ccnxSimpleFileTransferCommon_CommandFetch = "fetch";
 
 /**
  * The string we use for the 'list' command.
  */
-const char *simpleFileTransferTutorialCommon_CommandList = "list";
+const char *ccnxSimpleFileTransferCommon_CommandList = "list";
 
 PARCIdentity *
-simpleFileTransferTutorialCommon_CreateAndGetIdentity(const char *keystoreName,
-                                                      const char *keystorePassword,
-                                                      const char *subjectName)
+ccnxSimpleFileTransferCommon_CreateAndGetIdentity(const char *keystoreName,
+                                                  const char *keystorePassword,
+                                                  const char *subjectName)
 {
     parcSecurity_Init();
 
@@ -91,13 +91,13 @@ simpleFileTransferTutorialCommon_CreateAndGetIdentity(const char *keystoreName,
 }
 
 CCNxPortalFactory *
-simpleFileTransferTutorialCommon_SetupPortalFactory(const char *keystoreName,
-                                                    const char *keystorePassword,
-                                                    const char *subjectName)
+ccnxSimpleFileTransferCommon_SetupPortalFactory(const char *keystoreName,
+                                                const char *keystorePassword,
+                                                const char *subjectName)
 {
-    PARCIdentity *identity = simpleFileTransferTutorialCommon_CreateAndGetIdentity(keystoreName,
-                                                                                   keystorePassword,
-                                                                                   subjectName);
+    PARCIdentity *identity = ccnxSimpleFileTransferCommon_CreateAndGetIdentity(keystoreName,
+                                                                               keystorePassword,
+                                                                               subjectName);
     CCNxPortalFactory *result = ccnxPortalFactory_Create(identity);
     parcIdentity_Release(&identity);
 
@@ -105,7 +105,7 @@ simpleFileTransferTutorialCommon_SetupPortalFactory(const char *keystoreName,
 }
 
 uint64_t
-simpleFileTransferTutorialCommon_GetChunkNumberFromName(const CCNxName *name)
+ccnxSimpleFileTransferCommon_GetChunkNumberFromName(const CCNxName *name)
 {
     size_t numberOfSegmentsInName = ccnxName_GetSegmentCount(name);
     CCNxNameSegment *chunkNumberSegment = ccnxName_GetSegment(name, numberOfSegmentsInName - 1);
@@ -122,7 +122,7 @@ simpleFileTransferTutorialCommon_GetChunkNumberFromName(const CCNxName *name)
 }
 
 char *
-simpleFileTransferTutorialCommon_CreateFileNameFromName(const CCNxName *name)
+ccnxSimpleFileTransferCommon_CreateFileNameFromName(const CCNxName *name)
 {
     // For the Tutorial, the second to last NameSegment is the filename.
     CCNxNameSegment *fileNameSegment = ccnxName_GetSegment(name,
@@ -140,7 +140,7 @@ simpleFileTransferTutorialCommon_CreateFileNameFromName(const CCNxName *name)
 }
 
 char *
-simpleFileTransferTutorialCommon_CreateCommandStringFromName(const CCNxName *name, const CCNxName *domainPrefix)
+ccnxSimpleFileTransferCommon_CreateCommandStringFromName(const CCNxName *name, const CCNxName *domainPrefix)
 {
     // For the Tutorial, the NameSegment immediately following the domain prefix contains the command.
     CCNxNameSegment *commandSegment = ccnxName_GetSegment(name, ccnxName_GetSegmentCount(domainPrefix));
@@ -157,9 +157,9 @@ simpleFileTransferTutorialCommon_CreateCommandStringFromName(const CCNxName *nam
 }
 
 int
-simpleFileTransferTutorialCommon_ProcessCommandLineArguments(int argc, char **argv,
-                                                             int *commandArgCount, char **commandArgs,
-                                                             bool *needToShowUsage, bool *shouldExit)
+ccnxSimpleFileTransferCommon_ProcessCommandLineArguments(int argc, char **argv,
+                                                         int *commandArgCount, char **commandArgs,
+                                                         bool *needToShowUsage, bool *shouldExit)
 {
     int status = EXIT_SUCCESS;
     *commandArgCount = 0;

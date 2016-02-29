@@ -31,14 +31,14 @@
 
 // Include the file(s) containing the functions to be tested.
 // This permits internal static functions to be visible to this Test Framework.
-#include "../simpleFileTransferTutorial_FileIO.c"
+#include "../ccnxSimpleFileTransfer_FileIO.c"
 
 #include <stdlib.h>
 
 #include <parc/algol/parc_SafeMemory.h>
 #include <LongBow/unit-test.h>
 
-LONGBOW_TEST_RUNNER(simpleFileTransferTutorial_FileIO)
+LONGBOW_TEST_RUNNER(ccnxSimpleFileTransfer_FileIO)
 {
     // The following Test Fixtures will run their corresponding Test Cases.
     // Test Fixtures are run in the order specified, but all tests should be idempotent.
@@ -47,13 +47,13 @@ LONGBOW_TEST_RUNNER(simpleFileTransferTutorial_FileIO)
 }
 
 // The Test Runner calls this function once before any Test Fixtures are run.
-LONGBOW_TEST_RUNNER_SETUP(simpleFileTransferTutorial_FileIO)
+LONGBOW_TEST_RUNNER_SETUP(ccnxSimpleFileTransfer_FileIO)
 {
     return LONGBOW_STATUS_SUCCEEDED;
 }
 
 // The Test Runner calls this function once after all the Test Fixtures are run.
-LONGBOW_TEST_RUNNER_TEARDOWN(simpleFileTransferTutorial_FileIO)
+LONGBOW_TEST_RUNNER_TEARDOWN(ccnxSimpleFileTransfer_FileIO)
 {
     return LONGBOW_STATUS_SUCCEEDED;
 }
@@ -117,7 +117,7 @@ _createTempFileName(char *template)
 
 LONGBOW_TEST_CASE(Global, getFileChunk)
 {
-    char *fileName = _createTempFileName("/tmp/simpleFileTransferTutorial_testData.XXXXXXXX");
+    char *fileName = _createTempFileName("/tmp/ccnxSimpleFileTransfer_testData.XXXXXXXX");
     size_t chunkSize = 3300;        // arbitrary
     int numberOfChunksInTestFile = 20; // arbitrary
 
@@ -127,8 +127,8 @@ LONGBOW_TEST_CASE(Global, getFileChunk)
 // At this point, we have a file containing 'aaaa...' 'bbbbb...', etc, with each
 // letter repeating chunkSize times.
 
-    PARCBuffer *bufA = simpleFileTransferTutorialFileIO_GetFileChunk(fileName, chunkSize, 4);
-    PARCBuffer *bufB = simpleFileTransferTutorialFileIO_GetFileChunk(fileName, chunkSize, 5);
+    PARCBuffer *bufA = ccnxSimpleFileTransferFileIO_GetFileChunk(fileName, chunkSize, 4);
+    PARCBuffer *bufB = ccnxSimpleFileTransferFileIO_GetFileChunk(fileName, chunkSize, 5);
 
     assertTrue('e' == (char) parcBuffer_GetAtIndex(bufA, 0), "Expected 'e' at this location in the chunk buffer");
     assertTrue('e' == (char) parcBuffer_GetAtIndex(bufA, chunkSize - 1), "Expected 'e' at this location in the chunk buffer");
@@ -144,8 +144,8 @@ LONGBOW_TEST_CASE(Global, getFileChunk)
 
 LONGBOW_TEST_CASE(Global, appendFileChunk)
 {
-    char *inFileName = _createTempFileName("/tmp/simpleFileTransferTutorial_testData-src.XXXXXXXX");
-    char *outFileName = _createTempFileName("/tmp/simpleFileTransferTutorial_testData-dst.XXXXXXXX");
+    char *inFileName = _createTempFileName("/tmp/ccnxSimpleFileTransfer_testData-src.XXXXXXXX");
+    char *outFileName = _createTempFileName("/tmp/ccnxSimpleFileTransfer_testData-dst.XXXXXXXX");
 
     size_t chunkSize = 2300;        // arbitrary
     int numberOfChunksInTestFile = 20; // arbitrary
@@ -164,18 +164,18 @@ LONGBOW_TEST_CASE(Global, appendFileChunk)
 
 // This should copy inFileName to outFileName, chunk by sequential chunk.
     for (int c = 0; c < numberOfChunksInTestFile; c++) {
-        PARCBuffer *buf = simpleFileTransferTutorialFileIO_GetFileChunk(inFileName, chunkSize, c);
-        simpleFileTransferTutorialFileIO_AppendFileChunk(outFileName, buf);
+        PARCBuffer *buf = ccnxSimpleFileTransferFileIO_GetFileChunk(inFileName, chunkSize, c);
+        ccnxSimpleFileTransferFileIO_AppendFileChunk(outFileName, buf);
         parcBuffer_Release(&buf);
     }
 
-    assertTrue(simpleFileTransferTutorialFileIO_GetFileSize(inFileName)
-               == simpleFileTransferTutorialFileIO_GetFileSize(outFileName),
+    assertTrue(ccnxSimpleFileTransferFileIO_GetFileSize(inFileName)
+               == ccnxSimpleFileTransferFileIO_GetFileSize(outFileName),
                "Expected copied file to be the same size");
 
 // Now check a chunk of the contents of the files for sameness.
-    PARCBuffer *bufA = simpleFileTransferTutorialFileIO_GetFileChunk(inFileName, chunkSize + 4, 9);
-    PARCBuffer *bufB = simpleFileTransferTutorialFileIO_GetFileChunk(outFileName, chunkSize + 4, 9);
+    PARCBuffer *bufA = ccnxSimpleFileTransferFileIO_GetFileChunk(inFileName, chunkSize + 4, 9);
+    PARCBuffer *bufB = ccnxSimpleFileTransferFileIO_GetFileChunk(outFileName, chunkSize + 4, 9);
 
     assertTrue(parcBuffer_Equals(bufA, bufB), "Expected the file chunks to be the same");
 
@@ -192,14 +192,14 @@ LONGBOW_TEST_CASE(Global, appendFileChunk)
 
 LONGBOW_TEST_CASE(Global, getFileSize)
 {
-    char *fileName = _createTempFileName("/tmp/simpleFileTransferTutorial_testData-getFileSize.XXXXXXXX");
+    char *fileName = _createTempFileName("/tmp/ccnxSimpleFileTransfer_testData-getFileSize.XXXXXXXX");
     size_t chunkSize = 50; // arbitrary
     int numChunks = 11;
 
     FILE *fp = _createTestFile(fileName, chunkSize, numChunks);
     fclose(fp);
 
-    size_t fileSize = simpleFileTransferTutorialFileIO_GetFileSize(fileName);
+    size_t fileSize = ccnxSimpleFileTransferFileIO_GetFileSize(fileName);
 
     assertTrue((chunkSize * numChunks) == fileSize, "File size didn't match expected size");
 
@@ -209,26 +209,26 @@ LONGBOW_TEST_CASE(Global, getFileSize)
 
 LONGBOW_TEST_CASE(Global, isFileAvailable)
 {
-    char *fileName = _createTempFileName("/tmp/simpleFileTransferTutorial_testData-getFileSize.XXXXXXXX");
+    char *fileName = _createTempFileName("/tmp/ccnxSimpleFileTransfer_testData-getFileSize.XXXXXXXX");
 
 // Make sure it's not there
-    assertFalse(simpleFileTransferTutorialFileIO_IsFileAvailable(fileName), "Did not expect file to be available.");
+    assertFalse(ccnxSimpleFileTransferFileIO_IsFileAvailable(fileName), "Did not expect file to be available.");
 
 // Now create it
     FILE *fp = _createTestFile(fileName, 10, 10);
     fclose(fp);
-    assertTrue(simpleFileTransferTutorialFileIO_IsFileAvailable(fileName), "Expected file to be available.");
+    assertTrue(ccnxSimpleFileTransferFileIO_IsFileAvailable(fileName), "Expected file to be available.");
 
 // Now remove it
     unlink(fileName);
-    assertFalse(simpleFileTransferTutorialFileIO_IsFileAvailable(fileName), "Did not expect file to be available.");
+    assertFalse(ccnxSimpleFileTransferFileIO_IsFileAvailable(fileName), "Did not expect file to be available.");
 
     parcMemory_Deallocate((void **) &fileName);
 }
 
 LONGBOW_TEST_CASE(Global, createtDirectoryListing)
 {
-    PARCBuffer *listing = simpleFileTransferTutorialFileIO_CreateDirectoryListing(".");
+    PARCBuffer *listing = ccnxSimpleFileTransferFileIO_CreateDirectoryListing(".");
 
     assertNotNull(listing, "Expected a non-null listing buffer");
 
@@ -238,7 +238,7 @@ LONGBOW_TEST_CASE(Global, createtDirectoryListing)
 int
 main(int argc, char *argv[])
 {
-    LongBowRunner *testRunner = LONGBOW_TEST_RUNNER_CREATE(simpleFileTransferTutorial_FileIO);
+    LongBowRunner *testRunner = LONGBOW_TEST_RUNNER_CREATE(ccnxSimpleFileTransfer_FileIO);
     int exitStatus = longBowMain(argc, argv, testRunner, NULL);
     longBowTestRunner_Destroy(&testRunner);
     exit(exitStatus);

@@ -26,18 +26,16 @@ config.h
 # Xcode
 *.xcuserdatad
 
+# CLion
+.idea
+
 # Packages
 ccnx-tutorial*.tar.gz
 
 stamp-h1
 *~
 
-# Products
-src/tutorial_Client
-src/tutorial_Server
-
 # Test Products
-src/test/test_tutorial_FileIO
 *.log
 *.trs
 *.gcda

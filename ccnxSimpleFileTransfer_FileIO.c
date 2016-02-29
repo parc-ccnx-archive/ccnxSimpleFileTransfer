@@ -36,11 +36,11 @@
 #include <parc/algol/parc_Memory.h>
 #include <parc/algol/parc_BufferComposer.h>
 
-#include "simpleFileTransferTutorial_FileIO.h"
-#include "simpleFileTransferTutorial_Common.h"
+#include "ccnxSimpleFileTransfer_FileIO.h"
+#include "ccnxSimpleFileTransfer_Common.h"
 
 PARCBuffer *
-simpleFileTransferTutorialFileIO_GetFileChunk(const char *fileName, size_t chunkSize, uint64_t chunkNum)
+ccnxSimpleFileTransferFileIO_GetFileChunk(const char *fileName, size_t chunkSize, uint64_t chunkNum)
 {
     FILE *file = fopen(fileName, "r");
 
@@ -78,7 +78,7 @@ simpleFileTransferTutorialFileIO_GetFileChunk(const char *fileName, size_t chunk
 }
 
 size_t
-simpleFileTransferTutorialFileIO_AppendFileChunk(const char *fileName, const PARCBuffer *chunk)
+ccnxSimpleFileTransferFileIO_AppendFileChunk(const char *fileName, const PARCBuffer *chunk)
 {
     size_t numBytesWritten = 0;
 
@@ -99,13 +99,13 @@ simpleFileTransferTutorialFileIO_AppendFileChunk(const char *fileName, const PAR
 }
 
 bool
-simpleFileTransferTutorialFileIO_IsFileAvailable(const char *filePath)
+ccnxSimpleFileTransferFileIO_IsFileAvailable(const char *filePath)
 {
     return (access(filePath, F_OK | R_OK) == 0);
 }
 
 size_t
-simpleFileTransferTutorialFileIO_GetFileSize(const char *filePath)
+ccnxSimpleFileTransferFileIO_GetFileSize(const char *filePath)
 {
     size_t fileSize = 0;
 
@@ -122,7 +122,7 @@ simpleFileTransferTutorialFileIO_GetFileSize(const char *filePath)
 }
 
 PARCBuffer *
-simpleFileTransferTutorialFileIO_CreateDirectoryListing(const char *directoryName)
+ccnxSimpleFileTransferFileIO_CreateDirectoryListing(const char *directoryName)
 {
     DIR *directory = opendir(directoryName);
 
@@ -144,9 +144,9 @@ simpleFileTransferTutorialFileIO_CreateDirectoryListing(const char *directoryNam
                 char *fullFilePathString = parcBuffer_ToString(fileNameBuffer);
                 parcBuffer_Release(&fileNameBuffer);
 
-                if (simpleFileTransferTutorialFileIO_IsFileAvailable(fullFilePathString)) {
+                if (ccnxSimpleFileTransferFileIO_IsFileAvailable(fullFilePathString)) {
                     parcBufferComposer_Format(directoryListing, "  %s  (%zu bytes)\n",
-                                              entry->d_name, simpleFileTransferTutorialFileIO_GetFileSize(fullFilePathString));
+                                              entry->d_name, ccnxSimpleFileTransferFileIO_GetFileSize(fullFilePathString));
                 }
 
                 parcBufferComposer_Release(&fullFilePath);
@@ -172,7 +172,7 @@ simpleFileTransferTutorialFileIO_CreateDirectoryListing(const char *directoryNam
 }
 
 bool
-simpleFileTransferTutorialFileIO_DeleteFile(const char *fileName)
+ccnxSimpleFileTransferFileIO_DeleteFile(const char *fileName)
 {
     // Unlink the file. Return true if succesful, false if not.
     // False could mean the file didn't originally exist.
