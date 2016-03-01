@@ -30,7 +30,7 @@ macro(AddTest testFile)
   add_test(${ARGV0} ${ARGV0})
 endmacro(AddTest)
 
-AddTest(test_simpleFileTransferTutorial_FileIO)
+AddTest(test_ccnxSimpleFileTransfer_FileIO)
     
 
 

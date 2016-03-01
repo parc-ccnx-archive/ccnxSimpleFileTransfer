@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(SimpleFileTransferTutorial)
+project(ccnxSimpleFileTransfer)
 include( CTest)
 
 set(CMAKE_C_STANDARD 99)
@@ -24,21 +24,21 @@ set(TUTORIAL_LIBRARIES
        longbow 
        longbow-ansiterm)
 
-add_executable(simpleFileTransferTutorial_Server
-               simpleFileTransferTutorial_Server.c
-        simpleFileTransferTutorial_Common.c
-        simpleFileTransferTutorial_FileIO.c)
+add_executable(ccnxSimpleFileTransfer_Server
+               ccnxSimpleFileTransfer_Server.c
+        ccnxSimpleFileTransfer_Common.c
+        ccnxSimpleFileTransfer_FileIO.c)
     
-add_executable(simpleFileTransferTutorial_Client 
-               simpleFileTransferTutorial_Client.c
-        simpleFileTransferTutorial_Common.c
-        simpleFileTransferTutorial_FileIO.c)
+add_executable(ccnxSimpleFileTransfer_Client 
+               ccnxSimpleFileTransfer_Client.c
+        ccnxSimpleFileTransfer_Common.c
+        ccnxSimpleFileTransfer_FileIO.c)
 
-target_link_libraries(simpleFileTransferTutorial_Client ${TUTORIAL_LIBRARIES})
-target_link_libraries(simpleFileTransferTutorial_Server ${TUTORIAL_LIBRARIES})
+target_link_libraries(ccnxSimpleFileTransfer_Client ${TUTORIAL_LIBRARIES})
+target_link_libraries(ccnxSimpleFileTransfer_Server ${TUTORIAL_LIBRARIES})
 
-install(TARGETS simpleFileTransferTutorial_Client RUNTIME DESTINATION bin)
-install(TARGETS simpleFileTransferTutorial_Server RUNTIME DESTINATION bin)
+install(TARGETS ccnxSimpleFileTransfer_Client RUNTIME DESTINATION bin)
+install(TARGETS ccnxSimpleFileTransfer_Server RUNTIME DESTINATION bin)
 
 add_subdirectory(test)
 
