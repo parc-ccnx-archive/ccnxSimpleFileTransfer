@@ -58,10 +58,10 @@ it might look like this:
 
 4. Start a forwarder. Do ONE of the following:
 
-   4a. Start the CCNx forwarder, `metis_daemon`:  
+   4a. Start the CCNx forwarder, `metis_daemon`: 
        `$CCNX_HOME/bin/metis_daemon --capacity 0 &`
 
-   4b. Start the CCNx forwarder, `athena`:
+   4b. Start the CCNx forwarder, `athena`: 
        `$CCNX_HOME/bin/athena -s 0 &`
 
 5. Running the ccnxSimpleFileTransfer_Server and ccnxSimpleFileTransfer_Client:
