@@ -58,37 +58,37 @@ it might look like this:
 
 4. Start a forwarder. Do ONE of the following:
 
-   4a. Start the CCNx forwarder, `metis_daemon`: 
-       `$CCNX_HOME/bin/metis_daemon --capacity 0 &`
+   4a. Start the CCNx forwarder, `metis_daemon`:
+    `$CCNX_HOME/bin/metis_daemon --capacity 0 &`
 
-   4b. Start the CCNx forwarder, `athena`: 
-       `$CCNX_HOME/bin/athena -s 0 &`
+   4b. Start the CCNx forwarder, `athena`:
+    `$CCNX_HOME/bin/athena -s 0 &`
 
-5. Running the ccnxSimpleFileTransfer_Server and ccnxSimpleFileTransfer_Client:
-  Start the ccnxSimpleFileTransfer_Server, giving it a directory path as an argument.  
-  `$HOME/ccnx/bin/ccnxSimpleFileTransfer_Server /path/to/a/directory/with/files/to/serve`
+5. Run the `ccnxSimpleFileTransfer_Server`:
+  Start the `ccnxSimpleFileTransfer_Server`, giving it a directory path as an argument.
+  `$CCNX_HOME/bin/ccnxSimpleFileTransfer_Server /path/to/a/directory/with/files/to/serve`
 
-6.  In another window, run the ccnxSimpleFileTransfer_Client to retrieve the list of files
-  available from the ccnxSimpleFileTransfer_Server. Do not run the ccnxSimpleFileTransfer_Client from the
-  same directory you are serving files from.  
-  `$CCNX_HOME/bin/ccnxSimpleFileTransfer_Client list ` Will return a list of files from the ccnxSimpleFileTransfer_Server  
-  Or, use the ccnxSimpleFileTransfer_Client to fetch a file from the ccnxSimpleFileTransfer_Server. 
-  `$CCNX_HOME/bin/ccnxSimpleFileTransfer_Client fetch <filename>`    
-  Will fetch the specified file
+6.  Run the `ccnxSimpleFileTransfer_Client` to retrieve the list of files
+  available from the `ccnxSimpleFileTransfer_Server`:
+
+  `$CCNX_HOME/bin/ccnxSimpleFileTransfer_Client list ` # Will return a list of available files
+
+  Or, use the `ccnxSimpleFileTransfer_Client` to fetch a file from the `ccnxSimpleFileTransfer_Server`:
+
+  `$CCNX_HOME/bin/ccnxSimpleFileTransfer_Client fetch <filename>`   # Will fetch a file using the chunked protocol
+
+NOTE: Do not run the `ccnxSimpleFileTransfer_Client` in the same directory from which you are serving files as it will overwrite the source file and things will break.
 
 ## Notes: ##
 
 - The `ccnxSimpleFileTransfer_Client` and `ccnxSimpleFileTransfer_Server` automatically create keystore files in
   their working directory.
 
-- If you run `ccnxSimpleFileTransfer_Client` on the same directory that the `ccnxSimpleFileTransfer_Server` is
-  serving files from you will run into problems when you try to fetch a file as it will overwrite what it is fetching.
-
 - You can experiment with different chunk sizes by changing the value of `ccnxSimpleFileTransferCommon_ChunkSize`, which is defined in `ccnxSimpleFileTransfer_Common.c`.
 
 
-If you have any problems with the system, please discuss them on the developer 
-mailing list:  `ccnx@ccnx.org`.  If the problem is not resolved via mailing list 
+If you have any problems with the system, please discuss them on the developer
+mailing list:  `ccnx@ccnx.org`.  If the problem is not resolved via mailing list
 discussion, you can file tickets in the issue tracker.
 
 
@@ -102,5 +102,4 @@ LICENSE
 -------
 
 This software is licensed under the PARC Software License. See LICENSE File.
-
 
