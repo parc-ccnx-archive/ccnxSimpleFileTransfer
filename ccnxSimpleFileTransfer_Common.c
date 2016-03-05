@@ -37,7 +37,7 @@
 #include <ccnx/common/ccnx_NameSegmentNumber.h>
 
 #include <parc/security/parc_Security.h>
-#include <parc/security/parc_PublicKeySignerPkcs12Store.h>
+#include <parc/security/parc_Pkcs12KeyStore.h>
 #include <parc/security/parc_IdentityFile.h>
 
 /**
@@ -76,14 +76,13 @@ ccnxSimpleFileTransferCommon_CreateAndGetIdentity(const char *keystoreName,
     unsigned int keyLength = 1024;
     unsigned int validityDays = 30;
 
-    bool success = parcPublicKeySignerPkcs12Store_CreateFile(keystoreName, keystorePassword, subjectName, keyLength, validityDays);
+    bool success = parcPkcs12KeyStore_CreateFile(keystoreName, keystorePassword, subjectName, keyLength, validityDays);
     assertTrue(success,
-               "parcPublicKeySignerPkcs12Store_CreateFile('%s', '%s', '%s', %d, %d) failed.",
+               "parcPkcs12KeyStore_CreateFile('%s', '%s', '%s', %d, %d) failed.",
                keystoreName, keystorePassword, subjectName, keyLength, validityDays);
 
     PARCIdentityFile *identityFile = parcIdentityFile_Create(keystoreName, keystorePassword);
     PARCIdentity *result = parcIdentity_Create(identityFile, PARCIdentityFileAsPARCIdentity);
-    parcIdentityFile_Release(&identityFile);
 
     parcSecurity_Fini();
 

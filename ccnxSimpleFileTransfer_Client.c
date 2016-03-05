@@ -47,7 +47,6 @@
 
 #include <parc/security/parc_Security.h>
 #include <parc/security/parc_IdentityFile.h>
-#include <parc/security/parc_PublicKeySignerPkcs12Store.h>
 
 /**
  * Create a new CCNxPortalFactory instance using a randomly generated identity saved to
