@@ -325,7 +325,7 @@ _serveDirectory(const char *directoryPath)
 
     assertNotNull(portal, "Expected a non-null CCNxPortal pointer. Is the Forwarder running?");
 
-    CCNxName *domainPrefix = ccnxName_CreateFromURI(ccnxSimpleFileTransferCommon_DomainPrefix);
+    CCNxName *domainPrefix = ccnxName_CreateFromCString(ccnxSimpleFileTransferCommon_DomainPrefix);
 
     if (ccnxPortal_Listen(portal, domainPrefix, 365 * 86400, CCNxStackTimeout_Never)) {
         printf("ccnxSimpleFileTransfer_Server: now serving files from %s\n", directoryPath);

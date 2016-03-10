@@ -240,7 +240,7 @@ _receiveContentObject(CCNxContentObject *contentObject, const CCNxName *domainPr
 static CCNxInterest *
 _createInterest(const char *command, const char *targetName)
 {
-    CCNxName *interestName = ccnxName_CreateFromURI(ccnxSimpleFileTransferCommon_DomainPrefix); // Start with the prefix. We append to this.
+    CCNxName *interestName = ccnxName_CreateFromCString(ccnxSimpleFileTransferCommon_DomainPrefix); // Start with the prefix. We append to this.
 
     // Create a NameSegment for our command, which we will append after the prefix we just created.
     PARCBuffer *commandBuffer = parcBuffer_WrapCString((char *) command);
@@ -331,7 +331,7 @@ _executeUserCommand(const char *command, const char *targetName)
     // Send the Interest through the Portal, and wait for a response.
     CCNxMetaMessage *message = ccnxMetaMessage_CreateFromInterest(interest);
     if (ccnxPortal_Send(portal, message, CCNxStackTimeout_Never)) {
-        CCNxName *domainPrefix = ccnxName_CreateFromURI(ccnxSimpleFileTransferCommon_DomainPrefix);  // e.g. 'lci:/ccnx/tutorial'
+        CCNxName *domainPrefix = ccnxName_CreateFromCString(ccnxSimpleFileTransferCommon_DomainPrefix);  // e.g. 'lci:/ccnx/tutorial'
 
         result = _receiveResponseToIssuedInterest(portal, domainPrefix);
 
