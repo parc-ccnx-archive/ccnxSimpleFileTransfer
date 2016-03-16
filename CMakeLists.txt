@@ -25,6 +25,8 @@ set(TUTORIAL_LIBRARIES
        longbow 
        longbow-ansiterm)
 
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
 add_executable(ccnxSimpleFileTransfer_Server
                ccnxSimpleFileTransfer_Server.c
         ccnxSimpleFileTransfer_Common.c
