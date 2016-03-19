@@ -83,6 +83,7 @@ ccnxSimpleFileTransferCommon_CreateAndGetIdentity(const char *keystoreName,
 
     PARCIdentityFile *identityFile = parcIdentityFile_Create(keystoreName, keystorePassword);
     PARCIdentity *result = parcIdentity_Create(identityFile, PARCIdentityFileAsPARCIdentity);
+    parcIdentityFile_Release(&identityFile);
 
     parcSecurity_Fini();
 
