@@ -115,9 +115,9 @@ _getFinalChunkNumberOfFile(const char *filePath, uint32_t chunkSize)
 static CCNxContentObject *
 _createContentObject(const CCNxName *name, PARCBuffer *payload, uint64_t finalChunkNumber)
 {
-    // In the call below, we are un-const'ing name for ccnxContentObject_CreateWithDataPayload()
+    // In the call below, we are un-const'ing name for ccnxContentObject_CreateWithNameAndPayload()
     // but we will not be changing it.
-    CCNxContentObject *result = ccnxContentObject_CreateWithDataPayload((CCNxName *) name, payload);
+    CCNxContentObject *result = ccnxContentObject_CreateWithNameAndPayload((CCNxName *) name, payload);
     ccnxContentObject_SetFinalChunkNumber(result, finalChunkNumber);
 
     return result;
