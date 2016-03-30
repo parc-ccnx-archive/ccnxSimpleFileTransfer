@@ -37,7 +37,6 @@
 #include <parc/algol/parc_BufferComposer.h>
 
 #include "ccnxSimpleFileTransfer_FileIO.h"
-#include "ccnxSimpleFileTransfer_Common.h"
 
 PARCBuffer *
 ccnxSimpleFileTransferFileIO_GetFileChunk(const char *fileName, size_t chunkSize, uint64_t chunkNum)
@@ -75,27 +74,6 @@ ccnxSimpleFileTransferFileIO_GetFileChunk(const char *fileName, size_t chunkSize
     fclose(file);
 
     return result;
-}
-
-size_t
-ccnxSimpleFileTransferFileIO_AppendFileChunk(const char *fileName, const PARCBuffer *chunk)
-{
-    size_t numBytesWritten = 0;
-
-    FILE *file = fopen(fileName, "a"); // Open for appending. Create if it doesn't exist.
-
-    assertNotNull(file, "Could not open file '%s' - stopping.", fileName);
-
-    const void *buffer = parcBuffer_Overlay((PARCBuffer *) chunk, 0); // We're un-const'ing for parcBuffer_Overlay, but we do not change the buffer state.
-
-    numBytesWritten = fwrite(buffer, 1, parcBuffer_Remaining(chunk), file);
-
-    assertTrue(numBytesWritten == parcBuffer_Remaining(chunk),
-               "Couldn't write requested chunk to file: %s", fileName);
-
-    fclose(file);
-
-    return numBytesWritten;
 }
 
 bool

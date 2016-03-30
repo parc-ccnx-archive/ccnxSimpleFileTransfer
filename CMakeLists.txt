@@ -29,13 +29,14 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 add_executable(ccnxSimpleFileTransfer_Server
                ccnxSimpleFileTransfer_Server.c
-        ccnxSimpleFileTransfer_Common.c
-        ccnxSimpleFileTransfer_FileIO.c)
+               ccnxSimpleFileTransfer_Common.c
+               ccnxSimpleFileTransfer_ChunkList.c
+               ccnxSimpleFileTransfer_FileIO.c)
     
 add_executable(ccnxSimpleFileTransfer_Client 
                ccnxSimpleFileTransfer_Client.c
-        ccnxSimpleFileTransfer_Common.c
-        ccnxSimpleFileTransfer_FileIO.c)
+               ccnxSimpleFileTransfer_Common.c
+               ccnxSimpleFileTransfer_FileIO.c)
 
 target_link_libraries(ccnxSimpleFileTransfer_Client ${TUTORIAL_LIBRARIES})
 target_link_libraries(ccnxSimpleFileTransfer_Server ${TUTORIAL_LIBRARIES})

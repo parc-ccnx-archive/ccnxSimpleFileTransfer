@@ -49,13 +49,13 @@ extern const char *ccnxSimpleFileTransferCommon_TutorialName;
 /**
  * The CCNx Name prefix we'll use for the tutorial.
  */
-extern const char *ccnxSimpleFileTransferCommon_DomainPrefix;
+extern const char *ccnxSimpleFileTransferCommon_NamePrefix;
 
 /**
  * The size of a chunk. We break CCNx Content payloads up into pieces of this size.
  * 1200 was chosen as a size that should prevent IP fragmentation of CCNx ContentObject Messages.
  */
-extern const uint32_t ccnxSimpleFileTransferCommon_ChunkSize;
+extern const uint32_t ccnxSimpleFileTransferCommon_DefaultChunkSize;
 
 /**
  * The string we use for the 'fetch' command.
@@ -108,6 +108,17 @@ CCNxPortalFactory *ccnxSimpleFileTransferCommon_SetupPortalFactory(const char *k
  */
 uint64_t ccnxSimpleFileTransferCommon_GetChunkNumberFromName(const CCNxName *name);
 
+
+/**
+ * Given a CCNxName instance, return a new CCNxName that is the same as the original
+ * except without the final segment copied. We use this to strip the chunk number from a
+ * supplied CCNxName.
+ *
+ * @param [in] name A CCNxName instance from which to extract the base name.
+ * @return A new CCNxName instance that is the same as the original name, but without the final segment.
+ */
+CCNxName *ccnxSimpleFileTransferCommon_CreateWithBaseName(const CCNxName *name);
+
 /**
  * Given a CCNxName instance, structured for this tutorial, return a string representation
  * of the file name in the CCNxName. For the tutorial, this is located in the second to
@@ -130,25 +141,5 @@ char *ccnxSimpleFileTransferCommon_CreateFileNameFromName(const CCNxName *name);
  */
 char *ccnxSimpleFileTransferCommon_CreateCommandStringFromName(const CCNxName *name, const CCNxName *domainPrefix);
 
-/**
- * Process our command line arguments. If we're given '-h' or '-v', we handle them by displaying
- * the usage help or version, respectively. Unexpected will cause a return value of EXIT_FAILURE.
- * While processing the argument array, we also populate a list of pointers to non '-' arguments
- * and return those in the `commandArgs` parameter.
- *
- * @param [in] argc The count of command line arguments in `argv`.
- * @param [in] argv A pointer to the list of command line argument strings.
- * @param [out] commandArgCount A pointer to a int which will contain the number of non '-' arguments in `argv`.
- * @param [out] commandArgs A pointer to an array of pointers. The pointers will be set to the non '-' arguments
- *                          that were passed in in `argv`.
- * @param [out] needToShowUsage A pointer to a boolean that will be set to true if the caller should display the
- *                          usage of this application.
- * @param [out] shouldExit A pointer to a boolean that will be set to true if the caller should exit instead of
- *                         processing the commandArgs.
- *
- * @return EXIT_FAILURE if an unexpected '-' option was encountered. EXIT_SUCCESS otherwise.
- */
-int ccnxSimpleFileTransferCommon_ProcessCommandLineArguments(int argc, char **argv,
-                                                             int *commandArgCount, char **commandArgs,
-                                                             bool *needToShowUsage, bool *shouldExit);
+
 #endif // ccnxSimpleFileTransferCommon.h

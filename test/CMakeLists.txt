@@ -31,6 +31,7 @@ macro(AddTest testFile)
 endmacro(AddTest)
 
 AddTest(test_ccnxSimpleFileTransfer_FileIO)
+AddTest(test_ccnxSimpleFileTransfer_ChunkList)
     
 
 

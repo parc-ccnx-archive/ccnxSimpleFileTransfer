@@ -30,23 +30,25 @@
  */
 #include <stdio.h>
 #include <strings.h>
+#include <unistd.h>
+#include <ctype.h>
 
 #include "ccnxSimpleFileTransfer_Common.h"
-#include "ccnxSimpleFileTransfer_FileIO.h"
 
-#include <LongBow/runtime.h>
-
-#include <ccnx/api/ccnx_Portal/ccnx_Portal.h>
 #include <ccnx/api/ccnx_Portal/ccnx_PortalRTA.h>
+#include <parc/developer/parc_Stopwatch.h>
+#include <fcntl.h>
 
-#include <ccnx/common/ccnx_ContentObject.h>
-#include <ccnx/common/ccnx_Interest.h>
-#include <ccnx/common/ccnx_Name.h>
+typedef struct clientState {
+    CCNxName *namePrefix;
+    char *commandArg[2];
+    bool beVerbose;
+    bool doSaveToDisk;
 
-#include <parc/algol/parc_Memory.h>
-
-#include <parc/security/parc_Security.h>
-#include <parc/security/parc_IdentityFile.h>
+    uint64_t numBytesTransferred;
+    uint64_t transferTimeInMillis;
+    int fileBeingTransferred;
+} ClientState;
 
 /**
  * Create a new CCNxPortalFactory instance using a randomly generated identity saved to
@@ -100,32 +102,6 @@ _assembleDirectoryListing(PARCBuffer *payload, uint64_t chunkNumber, uint64_t fi
     return result;
 }
 
-/**
- * Given a sequential chunk of a 'fetch' response, append it to the file that we are assembling.
- * Return true if the final chunk has been written, false otherwise.
- *
- * @param [in] fileName The full name of the file to write the payload in to.
- * @param [in] payload A PARCBuffer containing the chunk of the file to write.
- * @param [in] chunkNumber The number of the chunk to be written.
- * @param [in] finalChunkNumber The number of the final chunk in the file.
- *
- * @return true if the entire file has been written, false otherwise.
- */
-static bool
-_assembleFile(const char *fileName, const PARCBuffer *payload, uint64_t chunkNumber, uint64_t finalChunkNumber)
-{
-    if (chunkNumber == 0) {
-        // If we're the first chunk (chunk #0), then make sure we're starting with an empty file.
-        ccnxSimpleFileTransferFileIO_DeleteFile(fileName);
-    }
-
-    // Note that the ccnxSimpleFileTransferFileIO_AppendFileChunk() function should be replaced with something that keeps
-    // an open file pointer instead of repeatedly re-opening it. This method simply opens (possibly creating)
-    // the file and appends the specified payload). It is not an efficient implementation.
-    ccnxSimpleFileTransferFileIO_AppendFileChunk(fileName, payload);
-
-    return (chunkNumber == finalChunkNumber); // true, if we just wrote the final chunk
-}
 
 /**
  * Receive a chunk of a directory listing and add it to the directory listing that we're
@@ -139,7 +115,8 @@ _assembleFile(const char *fileName, const PARCBuffer *payload, uint64_t chunkNum
  * @return true if the entire listing has been received, false otherwise.
  */
 static bool
-_receiveDirectoryListingChunk(PARCBuffer *payload, uint64_t chunkNumber, uint64_t finalChunkNumber)
+_receiveDirectoryListingChunk(ClientState *clientState,
+                              PARCBuffer *payload, uint64_t chunkNumber, uint64_t finalChunkNumber)
 {
     bool result = false;
     char *directoryList = _assembleDirectoryListing(payload, chunkNumber, finalChunkNumber);
@@ -167,12 +144,30 @@ _receiveDirectoryListingChunk(PARCBuffer *payload, uint64_t chunkNumber, uint64_
  * @return true if the entire file has been written, false otherwise.
  */
 static bool
-_receiveFileChunk(const char *fileName, const PARCBuffer *payload, uint64_t chunkNumber, uint64_t finalChunkNumber)
+_receiveFileChunk(ClientState *clientState, const char *fileName,
+                  const PARCBuffer *payload, uint64_t chunkNumber, uint64_t finalChunkNumber)
 {
-    bool isComplete = _assembleFile(fileName, payload, chunkNumber, finalChunkNumber);
+    // The file is complete when the chunknumber of the current ContentObject
+    // matches the one specified in the finalChunkNumber.
+    bool isComplete = (chunkNumber == finalChunkNumber);
+
+    if (clientState->doSaveToDisk) {
+        if (chunkNumber == 0) {
+            // If we're the first chunk (chunk #0), then make sure we're starting with an empty file.
+            clientState->fileBeingTransferred = open(fileName, O_CREAT | O_WRONLY, 0777);
+        }
+
+        void *buffer = parcBuffer_Overlay((PARCBuffer *) payload, 0);
+        ssize_t numBytesWritten = write(clientState->fileBeingTransferred, buffer, parcBuffer_Remaining(payload));
+    }
 
     if (isComplete) {
-        printf("File '%s' has been fully transferred in %ld chunks.\n", fileName, (unsigned long) finalChunkNumber + 1L);
+        printf("File '%s' has been fully transferred in %ld chunks.\n", fileName,
+               (unsigned long) finalChunkNumber + 1L);
+
+        if (clientState->doSaveToDisk) {
+            close(clientState->fileBeingTransferred);
+        }
     } else {
         printf("File '%s' has been %04.2f%% transferred.\r", fileName,
                ((float) chunkNumber / (float) finalChunkNumber) * 100.0f);
@@ -194,7 +189,7 @@ _receiveFileChunk(const char *fileName, const PARCBuffer *payload, uint64_t chun
  * @return The number of chunks of the content left to transfer.
  */
 static uint64_t
-_receiveContentObject(CCNxContentObject *contentObject, const CCNxName *domainPrefix)
+_receiveContentObject(ClientState *clientState, CCNxContentObject *contentObject)
 {
     CCNxName *contentName = ccnxContentObject_GetName(contentObject);
 
@@ -204,18 +199,19 @@ _receiveContentObject(CCNxContentObject *contentObject, const CCNxName *domainPr
     uint64_t finalChunkNumberSpecifiedByServer = ccnxContentObject_GetFinalChunkNumber(contentObject);
 
     // Get the type of the incoming message. Was it a response to a fetch' or a 'list' command?
-    char *command = ccnxSimpleFileTransferCommon_CreateCommandStringFromName(contentName, domainPrefix);
+    char *command = ccnxSimpleFileTransferCommon_CreateCommandStringFromName(contentName, clientState->namePrefix);
 
     // Process the payload.
     PARCBuffer *payload = ccnxContentObject_GetPayload(contentObject);
+    clientState->numBytesTransferred += parcBuffer_Remaining(payload);
 
     if (strncasecmp(command, ccnxSimpleFileTransferCommon_CommandList, strlen(command)) == 0) {
         // This is a chunk of the directory listing.
-        _receiveDirectoryListingChunk(payload, chunkNumber, finalChunkNumberSpecifiedByServer);
+        _receiveDirectoryListingChunk(clientState, payload, chunkNumber, finalChunkNumberSpecifiedByServer);
     } else if (strncasecmp(command, ccnxSimpleFileTransferCommon_CommandFetch, strlen(command)) == 0) {
         // This is a chunk of a file.
         char *fileName = ccnxSimpleFileTransferCommon_CreateFileNameFromName(contentName);
-        _receiveFileChunk(fileName, payload, chunkNumber, finalChunkNumberSpecifiedByServer);
+        _receiveFileChunk(clientState, fileName, payload, chunkNumber, finalChunkNumberSpecifiedByServer);
         parcMemory_Deallocate((void **) &fileName);
     } else {
         printf("ccnxSimpleFileTransfer_Client: Unknown command: %s\n", command);
@@ -237,12 +233,15 @@ _receiveContentObject(CCNxContentObject *contentObject, const CCNxName *domainPr
  * @return A newly created CCNxInterest for the specified command and targetName.
  */
 static CCNxInterest *
-_createInterest(const char *command, const char *targetName)
+_createInterest(ClientState *clientState)
 {
-    CCNxName *interestName = ccnxName_CreateFromCString(ccnxSimpleFileTransferCommon_DomainPrefix); // Start with the prefix. We append to this.
+    char *command = clientState->commandArg[0];
+    char *targetName = clientState->commandArg[1];
+
+    CCNxName *interestName = ccnxName_Copy(clientState->namePrefix); // Start with the prefix. We append to this.
 
     // Create a NameSegment for our command, which we will append after the prefix we just created.
-    PARCBuffer *commandBuffer = parcBuffer_WrapCString((char *) command);
+    PARCBuffer *commandBuffer = parcBuffer_WrapCString(command);
     CCNxNameSegment *commandSegment = ccnxNameSegment_CreateTypeValue(CCNxNameLabelType_NAME, commandBuffer);
     parcBuffer_Release(&commandBuffer);
 
@@ -253,10 +252,9 @@ _createInterest(const char *command, const char *targetName)
     // If we have a target, then create another NameSegment for it and append that.
     if (targetName != NULL) {
         // Create a NameSegment for our target object
-        PARCBuffer *targetBuf = parcBuffer_WrapCString((char *) targetName);
+        PARCBuffer *targetBuf = parcBuffer_WrapCString(targetName);
         CCNxNameSegment *targetSegment = ccnxNameSegment_CreateTypeValue(CCNxNameLabelType_NAME, targetBuf);
         parcBuffer_Release(&targetBuf);
-
 
         // Append it to the ccnxName.
         ccnxName_Append(interestName, targetSegment);
@@ -279,7 +277,7 @@ _createInterest(const char *command, const char *targetName)
  * @return true If the requested content has been fully received, false otherwise.
  */
 static bool
-_receiveResponseToIssuedInterest(CCNxPortal *portal, const CCNxName *domainPrefix)
+_receiveResponseToIssuedInterest(ClientState *clientState, CCNxPortal *portal)
 {
     bool isTransferComplete = false;
 
@@ -294,7 +292,7 @@ _receiveResponseToIssuedInterest(CCNxPortal *portal, const CCNxName *domainPrefi
                 // in the transfer. If it returns 0, it was the final block of the content
                 // and we're done.
 
-                if (_receiveContentObject(contentObject, domainPrefix) == 0) {
+                if (_receiveContentObject(clientState, contentObject) == 0) {
                     isTransferComplete = true;
                 }
             }
@@ -315,7 +313,7 @@ _receiveResponseToIssuedInterest(CCNxPortal *portal, const CCNxName *domainPrefi
  * @return true If a CCNxInterest for the specified command and optional target was successfully issued and answered.
  */
 static bool
-_executeUserCommand(const char *command, const char *targetName)
+_executeUserCommand(ClientState *clientState)
 {
     bool result = false;
     CCNxPortalFactory *factory = _setupConsumerPortalFactory();
@@ -325,18 +323,21 @@ _executeUserCommand(const char *command, const char *targetName)
     assertNotNull(portal, "Expected a non-null CCNxPortal pointer.");
 
     // Given the user's command and optional target, create an Interest.
-    CCNxInterest *interest = _createInterest(command, targetName);
+    CCNxInterest *interest = _createInterest(clientState);
 
     // Send the Interest through the Portal, and wait for a response.
     CCNxMetaMessage *message = ccnxMetaMessage_CreateFromInterest(interest);
+
+    PARCStopwatch *timer = parcStopwatch_Create();
+    parcStopwatch_Start(timer);
+
     if (ccnxPortal_Send(portal, message, CCNxStackTimeout_Never)) {
-        CCNxName *domainPrefix = ccnxName_CreateFromCString(ccnxSimpleFileTransferCommon_DomainPrefix);  // e.g. 'lci:/ccnx/tutorial'
-
-        result = _receiveResponseToIssuedInterest(portal, domainPrefix);
-
-        ccnxName_Release(&domainPrefix);
+        result = _receiveResponseToIssuedInterest(clientState, portal);
     }
 
+    clientState->transferTimeInMillis = parcStopwatch_ElapsedTimeMillis(timer);
+
+    parcStopwatch_Release(&timer);
     ccnxMetaMessage_Release(&message);
     ccnxInterest_Release(&interest);
     ccnxPortal_Release(&portal);
@@ -357,12 +358,101 @@ _displayUsage(char *programName)
 
     printf(" This example application can retrieve a specified file or the list of available files from\n");
     printf(" the ccnxSimpleFileTransfer_Server application, which should be running when this application is used.\n");
-    printf(" A CCNx forwarder (e.g. Metis or Athena) must also be running.\n\n");
+    printf(" A CCNx forwarder (e.g. Athena or Metis) must also be running.\n\n");
 
-    printf("Usage: %s  [-h] [-v] [ list | fetch <filename> ]\n", programName);
+    printf("Usage: %s  [-h] [-m] [-l <name>] <[list | fetch <filename>]>\n", programName);
+    printf("    -l <name> specifies the name the server will listen for.\n");
+    printf("    -m specifies that the incoming file not be saved to disk. Just discard the chunks as they arrive.\n");
+
+    printf("Examples:\n");
     printf("  '%s list' will list the files in the directory served by ccnxSimpleFileTransfer_Server\n", programName);
     printf("  '%s fetch <filename>' will fetch the specified filename\n", programName);
+    printf("  '%s -l ccnx:/foo/bar list' will list the files the files in ~/files, \n", programName);
+    printf("      assuming there is an instance of ccnxSimpleFileTransfer_Server listening for ccnx:/foo/bar\n");
+    printf("  '%s -m fetch foo.zip' will fetch foo.zip, but not save it to disk.\n", programName);
     printf("  '%s -h' will show this help\n\n", programName);
+}
+
+static bool
+_isConfigValid(ClientState *config)
+{
+    bool result = false;
+
+    if ((config->namePrefix != NULL) && (config->commandArg[0] != NULL)) {
+        if (strcasecmp(config->commandArg[0], ccnxSimpleFileTransferCommon_CommandFetch) == 0) {
+            // If the command is 'fetch', we need a filename argument too.
+            result = (config->commandArg[1] != NULL);
+        } else {
+            // otherwise, the only other command we know is 'list'.
+            result = strcasecmp(config->commandArg[0], ccnxSimpleFileTransferCommon_CommandList) == 0;
+        }
+    }
+    return result;
+}
+
+static bool
+_parseCommandLine(int argc, char *argv[], ClientState *clientState)
+{
+    char c;
+    while ((c = getopt(argc, argv, "l:mvh")) != -1) {
+        switch (c) {
+            case 'l': // -l ccnx:/foo/bar
+                clientState->namePrefix = ccnxName_CreateFromCString(optarg);
+                break;
+            case 'm': // -m
+                clientState->doSaveToDisk = false;
+                break;
+            case 'v': // -v (verbose)
+                clientState->beVerbose = true;
+                break;
+            case 'h':
+                _displayUsage(argv[0]);
+                return false;
+            case '?':
+                if (optopt == 'l' || optopt == 's') {
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                } else if (isascii(optopt)) {
+                    fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+                } else {
+                    fprintf(stderr,
+                            "Unknown option character `\\x%x'.\n",
+                            optopt);
+                }
+                _displayUsage(argv[0]);
+                return false;
+            default:
+                break;
+        }
+    }
+
+    int argIndex = 0;
+    for (int index = optind; index < optind + 2; index++) {
+        clientState->commandArg[argIndex++] = argv[index];
+    }
+    return true;
+}
+
+static void
+_dumpConfig(ClientState *config)
+{
+    printf("Client Configuration: \n");
+    char *nameString = NULL;
+
+    if (config->namePrefix != NULL) {
+        nameString = ccnxName_ToString(config->namePrefix);
+    }
+
+    printf("  namePrefix:    [%s]\n", nameString == NULL ? "MISSING" : nameString);
+    printf("  doSaveToDisk:  [%s]\n", config->doSaveToDisk ? "true" : "false");
+    printf("  beVerbose:     [%s]\n\n", config->beVerbose ? "true" : "false");
+
+    printf("  Command: [%s] [%s]\n\n",
+           config->commandArg[0] ? config->commandArg[0] : "MISSING",
+           config->commandArg[1] ? config->commandArg[1] : "");
+
+    if (nameString != NULL) {
+        parcMemory_Deallocate(&nameString);
+    }
 }
 
 int
@@ -370,31 +460,37 @@ main(int argc, char *argv[argc])
 {
     int status = EXIT_FAILURE;
 
-    char *commandArgs[argc];
-    int commandArgCount = 0;
-    bool needToShowUsage = false;
-    bool shouldExit = false;
+    ClientState clientState;
+    clientState.doSaveToDisk = true;
+    clientState.beVerbose = false;
+    clientState.namePrefix = ccnxName_CreateFromCString(ccnxSimpleFileTransferCommon_NamePrefix);
+    clientState.transferTimeInMillis = 0;
+    clientState.numBytesTransferred = 0;
+    clientState.commandArg[0] = NULL;          // 'fetch' or 'list'
+    clientState.commandArg[1] = NULL;          // optional filename for 'fetch'
+    clientState.fileBeingTransferred = -1;
 
-    status = ccnxSimpleFileTransferCommon_ProcessCommandLineArguments(argc, argv, &commandArgCount, commandArgs,
-                                                                      &needToShowUsage, &shouldExit);
+    if (_parseCommandLine(argc, argv, &clientState)) {
+        _dumpConfig(&clientState);
+        if (_isConfigValid(&clientState)) {
+            if (_executeUserCommand(&clientState)) {
+                double mb = (double) clientState.numBytesTransferred / (double) (1024 * 1024);
+                double secs = clientState.transferTimeInMillis / 1000.0;
+                double mbPerSec = mb / secs;
 
-    if (needToShowUsage) {
-        _displayUsage(argv[0]);
+                printf("%" PRIu64 " bytes transferred in %" PRIu64 " ms (%.3f MB/sec)\n",
+                       clientState.numBytesTransferred, clientState.transferTimeInMillis, mbPerSec);
+
+                status = EXIT_SUCCESS;
+            }
+
+        } else {
+            _displayUsage(argv[0]);
+        }
     }
 
-    if (shouldExit) {
-        exit(status);
-    }
-
-    if (commandArgCount == 2
-        && (strncmp(ccnxSimpleFileTransferCommon_CommandFetch, commandArgs[0], strlen(commandArgs[0])) == 0)) {        // "fetch <filename>"
-        status = _executeUserCommand(commandArgs[0], commandArgs[1]) ? EXIT_SUCCESS : EXIT_FAILURE;
-    } else if (commandArgCount == 1
-               && (strncmp(ccnxSimpleFileTransferCommon_CommandList, commandArgs[0], strlen(commandArgs[0])) == 0)) {  // "list"
-        status = _executeUserCommand(commandArgs[0], NULL) ? EXIT_SUCCESS : EXIT_FAILURE;
-    } else {
-        status = EXIT_FAILURE;
-        _displayUsage(argv[0]);
+    if (clientState.namePrefix != NULL) {
+        ccnxName_Release(&clientState.namePrefix);
     }
 
     exit(status);
