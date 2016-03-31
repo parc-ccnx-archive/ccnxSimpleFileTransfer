@@ -128,7 +128,7 @@ ccnxSimpleFileTransferCommon_CreateWithBaseName(const CCNxName *name)
     CCNxName *result = ccnxName_Create();
 
     // Copy all segments, except the last one - which is the chunk number.
-    for (int i = 0; i < numberOfSegmentsInName-1; i++) {
+    for (int i = 0; i < numberOfSegmentsInName - 1; i++) {
         ccnxName_Append(result, ccnxName_GetSegment(name, i));
     }
 
@@ -148,7 +148,7 @@ ccnxSimpleFileTransferCommon_CreateFileNameFromName(const CCNxName *name)
                CCNxNameLabelType_NAME,
                ccnxNameSegment_GetType(fileNameSegment))
     {
-        ccnxName_Display(name, 0); // This executes only if the enclosing assertion fai
+        ccnxName_Display(name, 0); // This executes only if the enclosing assertion fails
     }
 
     return ccnxNameSegment_ToString(fileNameSegment); // This memory must be freed by the caller.

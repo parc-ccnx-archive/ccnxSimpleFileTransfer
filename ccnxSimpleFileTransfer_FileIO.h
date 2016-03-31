@@ -32,7 +32,6 @@
 #ifndef ccnxSimpleFileTransfer_FileIO_h
 #define ccnxSimpleFileTransfer_FileIO_h
 
-#include <stdio.h>
 #include <parc/algol/parc_Buffer.h>
 
 /**

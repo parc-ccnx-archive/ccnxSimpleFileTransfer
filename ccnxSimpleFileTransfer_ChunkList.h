@@ -142,7 +142,7 @@ void ccnxSimpleFileTransferChunkList_SetChunk(CCNxSimpleFileTransferChunkList *c
 
 /**
  * Return the number of chunks contained in the specified chunk list. This assumes the chunk list
- * has been fully populated (by calling `ccnxSimpleFileTransferChunkList_SetChunk`, for each chunk
+ * has been fully populated (by calling `ccnxSimpleFileTransferChunkList_SetChunk`), for each chunk
  * slot.
  *
  * @param [in] chunkList - the chunk list from which to retrieve the number of chunks.
@@ -155,11 +155,9 @@ uint64_t ccnxSimpleFileTransferChunkList_GetNumChunks(CCNxSimpleFileTransferChun
  * The value is based on the chunkList's filename and number of chunks.
  *
  * @param [in] chunkList A pointer to `CCNxSimpleFileTransferChunkList` instance.
- *
  * @return a PARCHashCode
  *
  * @see `PARCHashCode`
  */
 PARCHashCode ccnxSimpleFileTransferChunkList_HashCode(const CCNxSimpleFileTransferChunkList *chunkList);
-
 #endif // ccnxSimpleFileTransfer_ChunkList_h

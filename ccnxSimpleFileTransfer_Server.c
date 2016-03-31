@@ -375,6 +375,8 @@ _createInterestResponse(const ServerState *serverState, const CCNxInterest *inte
         }
 
         parcMemory_Deallocate((void **) &fileName);
+    } else {
+        printf("_createInterestResponse() called with unknown command: %s\n", command);
     }
 
     parcMemory_Deallocate((void **) &command);
