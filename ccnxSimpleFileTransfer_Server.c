@@ -31,20 +31,29 @@
 
 #include <strings.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <ctype.h>
 
 #include "ccnxSimpleFileTransfer_Common.h"
 #include "ccnxSimpleFileTransfer_FileIO.h"
+#include "ccnxSimpleFileTransfer_ChunkList.h"
 
-#include <LongBow/runtime.h>
+#include <parc/algol/parc_HashMap.h>
 
-#include <ccnx/api/ccnx_Portal/ccnx_Portal.h>
 #include <ccnx/api/ccnx_Portal/ccnx_PortalRTA.h>
 
-#include <parc/algol/parc_Memory.h>
+#include <ccnx/common/ccnx_NameSegmentNumber.h>
 
-#include <ccnx/common/ccnx_Name.h>
-#include <ccnx/common/ccnx_ContentObject.h>
 
+typedef struct serverState {
+    CCNxName *namePrefix;
+    size_t chunkSize;
+    char *sourceDirectoryPath;
+    bool doPreChunkIntoMemory;
+    bool beVerbose;
+} ServerState;
+
+static PARCHashMap *_contentByFilename = NULL;
 
 /**
  * Create a new CCNxPortalFactory instance using a randomly generated identity saved to
@@ -72,7 +81,7 @@ _setupServerPortalFactory(void)
  * @return The number of chunks required to contain the specified data length.
  */
 static uint64_t
-_getNumberOfChunksRequired(uint64_t dataLength, uint32_t chunkSize)
+_getNumberOfChunksRequired(uint64_t dataLength, size_t chunkSize)
 {
     uint64_t chunks = (dataLength / chunkSize) + (dataLength % chunkSize > 0 ? 1 : 0);
     return (chunks == 0) ? 1 : chunks;
@@ -89,7 +98,7 @@ _getNumberOfChunksRequired(uint64_t dataLength, uint32_t chunkSize)
  * @return The number of the final chunk required to transfer the specified file.
  */
 static u_int64_t
-_getFinalChunkNumberOfFile(const char *filePath, uint32_t chunkSize)
+_getFinalChunkNumberOfFile(const char *filePath, size_t chunkSize)
 {
     size_t fileSize = ccnxSimpleFileTransferFileIO_GetFileSize(filePath);
     uint64_t totalNumberOfChunksInFile = _getNumberOfChunksRequired(fileSize, chunkSize);
@@ -113,7 +122,7 @@ _getFinalChunkNumberOfFile(const char *filePath, uint32_t chunkSize)
  * @return A newly created CCNxContentObject with the specified name, payload, and finalChunkNumber.
  */
 static CCNxContentObject *
-_createContentObject(const CCNxName *name, PARCBuffer *payload, uint64_t finalChunkNumber)
+_createContentObject(const CCNxName *name, const PARCBuffer *payload, const uint64_t finalChunkNumber)
 {
     // In the call below, we are un-const'ing name for ccnxContentObject_CreateWithNameAndPayload()
     // but we will not be changing it.
@@ -122,6 +131,52 @@ _createContentObject(const CCNxName *name, PARCBuffer *payload, uint64_t finalCh
 
     return result;
 }
+
+CCNxSimpleFileTransferChunkList *
+_chunkFileIntoMemory(char *fullFilePath, const CCNxName *baseName, size_t chunkSize)
+{
+    CCNxSimpleFileTransferChunkList *result = NULL;
+
+    printf("## Pre-chunking %s into memory...\n", fullFilePath);
+
+    // Make sure the file exists and is accessible before creating a ContentObject response.
+    if (ccnxSimpleFileTransferFileIO_IsFileAvailable(fullFilePath)) {
+        uint64_t finalChunkNumber = _getFinalChunkNumberOfFile(fullFilePath, chunkSize);
+
+        result = ccnxSimpleFileTransferChunkList_Create(fullFilePath, finalChunkNumber + 1);
+
+
+        for (uint64_t i = 0; i <= finalChunkNumber; i++) {
+            // Get the actual contents of the specified chunk of the file.
+            PARCBuffer *payload = ccnxSimpleFileTransferFileIO_GetFileChunk(fullFilePath, chunkSize, i);
+
+            if (payload != NULL) {
+                CCNxName *chunkName = ccnxName_Copy(baseName);
+                CCNxNameSegment *chunkSegment = ccnxNameSegmentNumber_Create(CCNxNameLabelType_CHUNK, i);
+                ccnxName_Append(chunkName, chunkSegment);
+
+                CCNxContentObject *contentObject = _createContentObject(chunkName, payload, finalChunkNumber);
+
+                parcBuffer_Release(&payload);
+                ccnxName_Release(&chunkName);
+                ccnxNameSegment_Release(&chunkSegment);
+
+                ccnxSimpleFileTransferChunkList_SetChunk(result, i, contentObject);
+            } else {
+                trapUnexpectedState("Could not get required chunk");
+            }
+        }
+        printf("## Finished chunking %s into memory. Resulted in %llu content objects.\n", fullFilePath,
+               finalChunkNumber + 1);
+    } else {
+        //trapUnexpectedState("Could not open file %s for chunking.", fullFilePath);
+
+        printf("## !! ## Could not access requested file [%s]. Could not pre-chunk. ## !! ##\n", fullFilePath);
+    }
+
+    return result;
+}
+
 
 /**
  * Given a CCNxName, a directory path, a file name, and a requested chunk number, return a new CCNxContentObject
@@ -140,26 +195,30 @@ _createContentObject(const CCNxName *name, PARCBuffer *payload, uint64_t finalCh
  *         the file did not exist or was otherwise unavailable.
  */
 static CCNxContentObject *
-_createFetchResponse(const CCNxName *name, const char *directoryPath, const char *fileName, uint64_t requestedChunkNumber)
+_createFetchResponse(const ServerState *serverState, const CCNxName *name,
+                     const char *fileName, const int64_t requestedChunkNumber)
 {
     CCNxContentObject *result = NULL;
     uint64_t finalChunkNumber = 0;
 
     // Combine the directoryPath and fileName into the full path name of the desired file
-    size_t filePathBufferSize = strlen(fileName) + strlen(directoryPath) + 2; // +2 for '/' and trailing null.
+    size_t filePathBufferSize =
+        strlen(fileName) + strlen(serverState->sourceDirectoryPath) + 2; // +2 for '/' and trailing null.
     char *fullFilePath = parcMemory_Allocate(filePathBufferSize);
     assertNotNull(fullFilePath, "parcMemory_Allocate(%zu) returned NULL", filePathBufferSize);
-    snprintf(fullFilePath, filePathBufferSize, "%s/%s", directoryPath, fileName);
+    snprintf(fullFilePath, filePathBufferSize, "%s/%s", serverState->sourceDirectoryPath, fileName);
 
     // Make sure the file exists and is accessible before creating a ContentObject response.
     if (ccnxSimpleFileTransferFileIO_IsFileAvailable(fullFilePath)) {
         // Since the file's length can change (e.g. if it is being written to while we're fetching
         // it), the final chunk number can change between requests for content chunks. So, update
         // it each time this function is called.
-        finalChunkNumber = _getFinalChunkNumberOfFile(fullFilePath, ccnxSimpleFileTransferCommon_ChunkSize);
+        finalChunkNumber = _getFinalChunkNumberOfFile(fullFilePath, serverState->chunkSize);
 
         // Get the actual contents of the specified chunk of the file.
-        PARCBuffer *payload = ccnxSimpleFileTransferFileIO_GetFileChunk(fullFilePath, ccnxSimpleFileTransferCommon_ChunkSize, requestedChunkNumber);
+        PARCBuffer *payload = ccnxSimpleFileTransferFileIO_GetFileChunk(fullFilePath,
+                                                                        serverState->chunkSize,
+                                                                        requestedChunkNumber);
 
         if (payload != NULL) {
             result = _createContentObject(name, payload, finalChunkNumber);
@@ -173,6 +232,60 @@ _createFetchResponse(const CCNxName *name, const char *directoryPath, const char
 }
 
 /**
+ * Same as _createFetchResponse(), but pre-calculates ALL of the content objects and stores them in memory for quick retrieval.
+ */
+static CCNxContentObject *
+_createFetchResponseWithPreChunking(const ServerState *serverState, const CCNxName *name,
+                                    const char *fileName, const uint64_t requestedChunkNumber)
+{
+    CCNxContentObject *result = NULL;
+
+    CCNxSimpleFileTransferChunkList *fileChunks = NULL;
+
+    // Get a copy of the name, but without the chunk number.
+    CCNxName *baseName = ccnxSimpleFileTransferCommon_CreateWithBaseName(name);
+
+    fileChunks = (CCNxSimpleFileTransferChunkList *) parcHashMap_Get(_contentByFilename, baseName);
+    // We're assuming no name collisions in the hashmap...
+
+    if (fileChunks == NULL) {
+        // Chunk list for this file was empty. Build it. This will take a while.
+
+        // Combine the directoryPath and fileName into the full path name of the desired file
+        size_t filePathBufferSize =
+            strlen(fileName) + strlen(serverState->sourceDirectoryPath) + 2; // +2 for '/' and trailing null.
+        char *fullFilePath = parcMemory_Allocate(filePathBufferSize);
+        assertNotNull(fullFilePath, "parcMemory_Allocate(%zu) returned NULL", filePathBufferSize);
+        snprintf(fullFilePath, filePathBufferSize, "%s/%s", serverState->sourceDirectoryPath, fileName);
+
+        fileChunks = _chunkFileIntoMemory(fullFilePath, baseName, serverState->chunkSize);
+
+        if (fileChunks != NULL) {
+            parcHashMap_Put(_contentByFilename, baseName, fileChunks);
+            parcMemory_Deallocate((void **) &fullFilePath);
+        }
+    }
+    ccnxName_Release(&baseName);
+
+    if (fileChunks != NULL) {
+
+        if (requestedChunkNumber < ccnxSimpleFileTransferChunkList_GetNumChunks(fileChunks)) {
+            result = ccnxSimpleFileTransferChunkList_GetChunk(fileChunks, requestedChunkNumber);
+            if (result != NULL) {
+                // We actually want to return a reference to the ContentObject chunk, as
+                // the calling code expects to be able to release what we return.
+                result = ccnxContentObject_Acquire(result);
+            }
+        } else {
+            printf("Requested out of range chunk %lld for %s. Returning NULL\n", requestedChunkNumber, fileName);
+        }
+    }
+
+    return result; // Could be NULL if there was no payload
+}
+
+
+/**
  * Given a CCNxName, a directory path, and a requested chunk number, create a directory listing and return the specified
  * chunk of the directory listing as the payload of a newly created CCNxContentObject.
  * The new CCnxContentObject must eventually be released by calling ccnxContentObject_Release().
@@ -184,30 +297,30 @@ _createFetchResponse(const CCNxName *name, const char *directoryPath, const char
  * @return A new CCNxContentObject instance containing the request chunk of the directory listing.
  */
 static CCNxContentObject *
-_createListResponse(CCNxName *name, const char *directoryPath, uint64_t requestedChunkNumber)
+_createListResponse(const ServerState *serverState, CCNxName *name, uint64_t requestedChunkNumber)
 {
     CCNxContentObject *result = NULL;
 
-    PARCBuffer *directoryList = ccnxSimpleFileTransferFileIO_CreateDirectoryListing(directoryPath);
+    PARCBuffer *directoryList = ccnxSimpleFileTransferFileIO_CreateDirectoryListing(serverState->sourceDirectoryPath);
 
-    uint64_t totalChunksInDirList = _getNumberOfChunksRequired(parcBuffer_Limit(directoryList), ccnxSimpleFileTransferCommon_ChunkSize);
+    uint64_t totalChunksInDirList = _getNumberOfChunksRequired(parcBuffer_Limit(directoryList),
+                                                               serverState->chunkSize);
     if (requestedChunkNumber < totalChunksInDirList) {
         // Set the buffer's position to the start of the desired chunk.
-        parcBuffer_SetPosition(directoryList, (requestedChunkNumber * ccnxSimpleFileTransferCommon_ChunkSize));
+        parcBuffer_SetPosition(directoryList, (requestedChunkNumber * serverState->chunkSize));
 
         // See if we have more than 1 chunk's worth of data to in the buffer. If so, set the buffer's limit
         // to the end of the chunk.
         size_t chunkLen = parcBuffer_Remaining(directoryList);
 
-        if (chunkLen > ccnxSimpleFileTransferCommon_ChunkSize) {
-            parcBuffer_SetLimit(directoryList, parcBuffer_Position(directoryList) + ccnxSimpleFileTransferCommon_ChunkSize);
+        if (chunkLen > serverState->chunkSize) {
+            parcBuffer_SetLimit(directoryList,
+                                parcBuffer_Position(directoryList) + serverState->chunkSize);
         }
 
-        printf("ccnxSimpleFileTransfer_Server: Responding to 'list' command with chunk %ld/%ld\n",
-               (unsigned long) requestedChunkNumber, (unsigned long) totalChunksInDirList);
-
         // Calculate the final chunk number
-        uint64_t finalChunkNumber = (totalChunksInDirList > 0) ? totalChunksInDirList - 1 : 0; // the final chunk, 0-based
+        uint64_t finalChunkNumber = (totalChunksInDirList > 0) ? totalChunksInDirList - 1
+                                                               : 0; // the final chunk, 0-based
 
         // At this point, dirListBuf has its position and limit set to the beginning and end of the
         // specified chunk.
@@ -232,28 +345,38 @@ _createListResponse(CCNxName *name, const char *directoryPath, uint64_t requeste
  *         or NULL if the Interest couldn't be answered.
  */
 static CCNxContentObject *
-_createInterestResponse(const CCNxInterest *interest, const CCNxName *domainPrefix, const char *directoryPath)
+_createInterestResponse(const ServerState *serverState, const CCNxInterest *interest)
 {
     CCNxName *interestName = ccnxInterest_GetName(interest);
 
-    char *command = ccnxSimpleFileTransferCommon_CreateCommandStringFromName(interestName, domainPrefix);
+    char *command = ccnxSimpleFileTransferCommon_CreateCommandStringFromName(interestName,
+                                                                             (const CCNxName *) serverState->namePrefix);
 
     uint64_t requestedChunkNumber = ccnxSimpleFileTransferCommon_GetChunkNumberFromName(interestName);
-
-    char *interestNameString = ccnxName_ToString(interestName);
-    printf("ccnxSimpleFileTransfer_Server: received Interest for chunk %d of %s, command = %s\n",
-           (int) requestedChunkNumber, interestNameString, command);
-    parcMemory_Deallocate((void **) &interestNameString);
 
     CCNxContentObject *result = NULL;
     if (strncasecmp(command, ccnxSimpleFileTransferCommon_CommandList, strlen(command)) == 0) {
         // This was a 'list' command. We should return the requested chunk of the directory listing.
-        result = _createListResponse(interestName, directoryPath, requestedChunkNumber);
+        result = _createListResponse(serverState, interestName, requestedChunkNumber);
     } else if (strncasecmp(command, ccnxSimpleFileTransferCommon_CommandFetch, strlen(command)) == 0) {
         // This was a 'fetch' command. We should return the requested chunk of the file specified.
         char *fileName = ccnxSimpleFileTransferCommon_CreateFileNameFromName(interestName);
-        result = _createFetchResponse(interestName, directoryPath, fileName, requestedChunkNumber);
+
+        if (serverState->doPreChunkIntoMemory) {
+            result = _createFetchResponseWithPreChunking(serverState,
+                                                         interestName,
+                                                         fileName,
+                                                         requestedChunkNumber);
+        } else {
+            result = _createFetchResponse(serverState,
+                                          interestName,
+                                          fileName,
+                                          requestedChunkNumber);
+        }
+
         parcMemory_Deallocate((void **) &fileName);
+    } else {
+        printf("_createInterestResponse() called with unknown command: %s\n", command);
     }
 
     parcMemory_Deallocate((void **) &command);
@@ -272,7 +395,7 @@ _createInterestResponse(const CCNxInterest *interest, const CCNxName *domainPref
  * @return true if at least one Interest is received and responded to, false otherwise.
  */
 static bool
-_receiveAndAnswerInterests(CCNxPortal *portal, const CCNxName *domainPrefix, const char *directoryPath)
+_receiveAndAnswerInterests(const ServerState *serverState, CCNxPortal *portal)
 {
     bool result = false;
     CCNxMetaMessage *inboundMessage = NULL;
@@ -281,17 +404,37 @@ _receiveAndAnswerInterests(CCNxPortal *portal, const CCNxName *domainPrefix, con
         if (ccnxMetaMessage_IsInterest(inboundMessage)) {
             CCNxInterest *interest = ccnxMetaMessage_GetInterest(inboundMessage);
 
-            CCNxContentObject *response = _createInterestResponse(interest, domainPrefix, directoryPath);
+            if (serverState->beVerbose) {
+                CCNxName *interestName = ccnxInterest_GetName(interest);
+                char *nameString = ccnxName_ToString(interestName);
+                uint64_t requestedChunkNumber = ccnxSimpleFileTransferCommon_GetChunkNumberFromName(interestName);
+                printf("<- Received interest for [%s] (chunk #%" PRIu64 ")\n", nameString, requestedChunkNumber);
+                parcMemory_Deallocate(&nameString);
+            }
+
+            CCNxContentObject *response = _createInterestResponse(serverState, interest);
 
             // At this point, response has either the requested chunk of the request file/command,
             // or remains NULL.
+
+            if (serverState->beVerbose) {
+                if (response != NULL) {
+                    PARCBuffer *payload = ccnxContentObject_GetPayload(response);
+                    size_t payloadSize = 0;
+                    if (payload != NULL) {
+                        payloadSize = parcBuffer_Limit(payload);
+                    }
+                    printf(" -> Responding with %ld bytes\n", payloadSize);
+                }
+            }
 
             if (response != NULL) {
                 // We had a response, so send it back through the Portal.
                 CCNxMetaMessage *responseMessage = ccnxMetaMessage_CreateFromContentObject(response);
 
                 if (ccnxPortal_Send(portal, responseMessage, CCNxStackTimeout_Never) == false) {
-                    fprintf(stderr, "ccnxPortal_Send failed (error %d). Is the Forwarder running?\n", ccnxPortal_GetError(portal));
+                    fprintf(stderr, "ccnxPortal_Send failed (error %d). Is the Forwarder running?\n",
+                            ccnxPortal_GetError(portal));
                 }
 
                 ccnxMetaMessage_Release(&responseMessage);
@@ -315,7 +458,7 @@ _receiveAndAnswerInterests(CCNxPortal *portal, const CCNxName *domainPrefix, con
  * @return true if at least one Interest is received and responded to, false otherwise.
  */
 static bool
-_serveDirectory(const char *directoryPath)
+_serveFiles(ServerState *serverState)
 {
     bool result = false;
 
@@ -325,11 +468,10 @@ _serveDirectory(const char *directoryPath)
 
     assertNotNull(portal, "Expected a non-null CCNxPortal pointer. Is the Forwarder running?");
 
-    CCNxName *domainPrefix = ccnxName_CreateFromCString(ccnxSimpleFileTransferCommon_DomainPrefix);
-
-    if (ccnxPortal_Listen(portal, domainPrefix, 365 * 86400, CCNxStackTimeout_Never)) {
-        printf("ccnxSimpleFileTransfer_Server: now serving files from %s\n", directoryPath);
-        result = _receiveAndAnswerInterests(portal, domainPrefix, directoryPath);
+    time_t secondsToLive = 365 * 86400; // 365 days
+    if (ccnxPortal_Listen(portal, serverState->namePrefix, secondsToLive, CCNxStackTimeout_Never)) {
+        printf("ccnxSimpleFileTransfer_Server: now serving files from %s\n", serverState->sourceDirectoryPath);
+        result = _receiveAndAnswerInterests(serverState, portal);
     }
 
     ccnxPortal_Release(&portal);
@@ -352,9 +494,94 @@ _displayUsage(char *programName)
     printf(" A CCNx forwarder (e.g. Metis or Athena) must be running before running it. Once running, the peer\n");
     printf(" ccnxSimpleFileTransfer_Client application can request a listing or a specified file.\n\n");
 
-    printf("Usage: %s [-h] [-v] <directory path>\n", programName);
+    printf("Usage: %s [-h] [-s chunkSizeInBytes] [-m] [-l <name>] <directory path>\n", programName);
+    printf("    -l <CCN name> specifies the name the server will listen for.\n");
+    printf("    -s <size in bytes> specifies the size of the chunks to be returned.\n");
+    printf("    -m specifies that files should be pre-chunked into memory. This increases\n");
+    printf("       performance at the expense of memory.\n");
+    printf("Examples:\n");
     printf("  '%s ~/files' will serve the files in ~/files\n", programName);
+    printf("  '%s -l ccnx:/foo/bar -d ~/files' will serve the files in ~/files, \n", programName);
+    printf("      responding to the name ccnx:/foo/bar\n");
+    printf("  '%s -m -s 8192 ~/files' will serve the files in ~/files, chunking in to memory first,\n", programName);
+    printf("      using a 8Kb chunk size, using the default name.\n");
     printf("  '%s -h' will show this help\n\n", programName);
+}
+
+static void
+_dumpState(ServerState *config)
+{
+    printf("Server Configuration: \n");
+    char *nameString = NULL;
+
+    if (config->namePrefix != NULL) {
+        nameString = ccnxName_ToString(config->namePrefix);
+    }
+
+    printf("  namePrefix:    [%s]\n", nameString == NULL ? "MISSING" : nameString);
+    printf("  doPreChunk:    [%s]\n", config->doPreChunkIntoMemory ? "true" : "false");
+    printf("  directoryPath: [%s]\n", config->sourceDirectoryPath == NULL ? "MISSING" : config->sourceDirectoryPath);
+    printf("  chunkSize:     [%ld]\n", config->chunkSize);
+    printf("  beVerbose:     [%s]\n", config->beVerbose ? "true" : "false");
+
+    if (nameString != NULL) {
+        parcMemory_Deallocate(&nameString);
+    }
+}
+
+static bool
+_parseCommandLine(int argc, char *argv[], ServerState *serverState)
+{
+    char c;
+    while ((c = getopt(argc, argv, "l:s:mhv")) != -1) {
+        switch (c) {
+            case 'l': // -l ccnx:/foo/bar
+                if (serverState->namePrefix != NULL) {
+                    ccnxName_Release(&serverState->namePrefix);
+                }
+                serverState->namePrefix = ccnxName_CreateFromCString(optarg);
+                break;
+            case 's': // -s 1200
+                serverState->chunkSize = atoi(optarg);
+                break;
+            case 'm': // -m
+                serverState->doPreChunkIntoMemory = true;
+                break;
+            case 'v': // -v (verbose)
+                serverState->beVerbose = true;
+                break;
+            case 'h':
+                _displayUsage(argv[0]);
+                return false;
+            case '?':
+                if (optopt == 'l' || optopt == 's') {
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                } else if (isascii(optopt)) {
+                    fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+                } else {
+                    fprintf(stderr,
+                            "Unknown option character `\\x%x'.\n",
+                            optopt);
+                }
+                return false;
+            default:
+                break;
+        }
+    }
+
+    if (argv[optind] != NULL) {
+        serverState->sourceDirectoryPath = argv[optind];
+    }
+
+    return true;
+}
+
+static bool
+_isStateValid(ServerState *serverState)
+{
+    return (serverState->chunkSize > 0)
+           && (serverState->sourceDirectoryPath != 0)
+           && (serverState->namePrefix != NULL);
 }
 
 int
@@ -362,27 +589,29 @@ main(int argc, char *argv[argc])
 {
     int status = EXIT_FAILURE;
 
-    char *commandArgs[argc];
-    int commandArgCount = 0;
-    bool needToShowUsage = false;
-    bool shouldExit = false;
+    ServerState serverState;
+    serverState.doPreChunkIntoMemory = false;
+    serverState.chunkSize = ccnxSimpleFileTransferCommon_DefaultChunkSize;
+    serverState.namePrefix = ccnxName_CreateFromCString(ccnxSimpleFileTransferCommon_NamePrefix);
+    serverState.sourceDirectoryPath = NULL;
+    serverState.beVerbose = false;
 
-    status = ccnxSimpleFileTransferCommon_ProcessCommandLineArguments(argc, argv, &commandArgCount, commandArgs,
-                                                                      &needToShowUsage, &shouldExit);
-
-    if (needToShowUsage) {
-        _displayUsage(argv[0]);
-    }
-
-    if (shouldExit) {
-        exit(status);
-    }
-
-    if (commandArgCount == 1) {
-        status = (_serveDirectory(commandArgs[0]) ? EXIT_SUCCESS : EXIT_FAILURE);
+    if (_parseCommandLine(argc, argv, &serverState)) {
+        if (_isStateValid(&serverState)) {
+            _dumpState(&serverState);
+            _contentByFilename = parcHashMap_Create();
+            status = (_serveFiles(&serverState) ? EXIT_SUCCESS : EXIT_FAILURE);
+        } else {
+            _displayUsage(argv[0]);
+            printf("Cannot proceed with the specified parameters - stopping.\n");
+            _dumpState(&serverState);
+        }
     } else {
-        status = EXIT_FAILURE;
         _displayUsage(argv[0]);
+    }
+
+    if (serverState.namePrefix != NULL) {
+        ccnxName_Release(&serverState.namePrefix);
     }
 
     exit(status);

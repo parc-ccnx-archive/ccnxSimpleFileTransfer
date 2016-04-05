@@ -48,16 +48,6 @@
 PARCBuffer *ccnxSimpleFileTransferFileIO_GetFileChunk(const char *fileName, size_t chunkSize, uint64_t chunkNumber);
 
 /**
- * Given a PARCBuffer, append its contents to the file specified by the given fileName.
- *
- * @param [in] fileName A pointer to a string containing the name of the file to write to.
- * @param [in] chunk A pointer to a PARCBuffer containing the bytes to append to the file.
- *
- * @return The number of bytes written to the file.
- */
-size_t ccnxSimpleFileTransferFileIO_AppendFileChunk(const char *fileName, const PARCBuffer *chunk);
-
-/**
  * Check if a file exists and is readable.
  * Return true if it does, false otherwise.
  *
@@ -77,15 +67,6 @@ bool ccnxSimpleFileTransferFileIO_IsFileAvailable(const char *fileName);
  */
 size_t ccnxSimpleFileTransferFileIO_GetFileSize(const char *fileName);
 
-/**
- * Delete the file specified.
- *
- * @param [in] fileName A pointer to a string containing the name of the file to delete.
- *
- * @return true If the file was successfully deleted.
- * @return false If the file was not deleted.
- */
-bool ccnxSimpleFileTransferFileIO_DeleteFile(const char *fileName);
 
 /**
  * Return a PARCBuffer containing a string representing the list of files and their sizes in the directory

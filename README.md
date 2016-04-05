@@ -84,7 +84,7 @@ NOTE: Do not run the `ccnxSimpleFileTransfer_Client` in the same directory from 
 - The `ccnxSimpleFileTransfer_Client` and `ccnxSimpleFileTransfer_Server` automatically create keystore files in
   their working directory.
 
-- You can experiment with different chunk sizes by changing the value of `ccnxSimpleFileTransferCommon_ChunkSize`, which is defined in `ccnxSimpleFileTransfer_Common.c`.
+- You can experiment with different chunk sizes by changing the value of `ccnxSimpleFileTransferCommon_DefaultChunkSize`, which is defined in `ccnxSimpleFileTransfer_Common.c`.
 
 
 If you have any problems with the system, please discuss them on the developer

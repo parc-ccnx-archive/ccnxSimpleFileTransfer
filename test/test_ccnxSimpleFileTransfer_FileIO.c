@@ -33,8 +33,6 @@
 // This permits internal static functions to be visible to this Test Framework.
 #include "../ccnxSimpleFileTransfer_FileIO.c"
 
-#include <stdlib.h>
-
 #include <parc/algol/parc_SafeMemory.h>
 #include <LongBow/unit-test.h>
 
@@ -61,10 +59,9 @@ LONGBOW_TEST_RUNNER_TEARDOWN(ccnxSimpleFileTransfer_FileIO)
 LONGBOW_TEST_FIXTURE(Global)
 {
     LONGBOW_RUN_TEST_CASE(Global, getFileSize);
-    LONGBOW_RUN_TEST_CASE(Global, appendFileChunk);
     LONGBOW_RUN_TEST_CASE(Global, getFileChunk);
     LONGBOW_RUN_TEST_CASE(Global, isFileAvailable);
-    LONGBOW_RUN_TEST_CASE(Global, createtDirectoryListing);
+    LONGBOW_RUN_TEST_CASE(Global, createDirectoryListing);
 }
 
 LONGBOW_TEST_FIXTURE_SETUP(Global)
@@ -142,54 +139,6 @@ LONGBOW_TEST_CASE(Global, getFileChunk)
     parcMemory_Deallocate((void **) &fileName);
 }
 
-LONGBOW_TEST_CASE(Global, appendFileChunk)
-{
-    char *inFileName = _createTempFileName("/tmp/ccnxSimpleFileTransfer_testData-src.XXXXXXXX");
-    char *outFileName = _createTempFileName("/tmp/ccnxSimpleFileTransfer_testData-dst.XXXXXXXX");
-
-    size_t chunkSize = 2300;        // arbitrary
-    int numberOfChunksInTestFile = 20; // arbitrary
-
-    size_t fileSize = 0;
-
-// Create our source data file
-    FILE *fp = _createTestFile(inFileName, chunkSize, numberOfChunksInTestFile);
-    fseek(fp, 0L, SEEK_END);
-    fileSize = ftell(fp);
-    fclose(fp);
-
-    assertTrue((chunkSize * numberOfChunksInTestFile) == fileSize, "Unexpected source data file size");
-
-    FILE *fpDup = fopen(outFileName, "w"); // open, truncate if exists
-
-// This should copy inFileName to outFileName, chunk by sequential chunk.
-    for (int c = 0; c < numberOfChunksInTestFile; c++) {
-        PARCBuffer *buf = ccnxSimpleFileTransferFileIO_GetFileChunk(inFileName, chunkSize, c);
-        ccnxSimpleFileTransferFileIO_AppendFileChunk(outFileName, buf);
-        parcBuffer_Release(&buf);
-    }
-
-    assertTrue(ccnxSimpleFileTransferFileIO_GetFileSize(inFileName)
-               == ccnxSimpleFileTransferFileIO_GetFileSize(outFileName),
-               "Expected copied file to be the same size");
-
-// Now check a chunk of the contents of the files for sameness.
-    PARCBuffer *bufA = ccnxSimpleFileTransferFileIO_GetFileChunk(inFileName, chunkSize + 4, 9);
-    PARCBuffer *bufB = ccnxSimpleFileTransferFileIO_GetFileChunk(outFileName, chunkSize + 4, 9);
-
-    assertTrue(parcBuffer_Equals(bufA, bufB), "Expected the file chunks to be the same");
-
-    parcBuffer_Release(&bufA);
-    parcBuffer_Release(&bufB);
-
-    fclose(fpDup);
-
-    unlink(inFileName);
-    unlink(outFileName);
-    parcMemory_Deallocate((void **) &inFileName);
-    parcMemory_Deallocate((void **) &outFileName);
-}
-
 LONGBOW_TEST_CASE(Global, getFileSize)
 {
     char *fileName = _createTempFileName("/tmp/ccnxSimpleFileTransfer_testData-getFileSize.XXXXXXXX");
@@ -226,7 +175,7 @@ LONGBOW_TEST_CASE(Global, isFileAvailable)
     parcMemory_Deallocate((void **) &fileName);
 }
 
-LONGBOW_TEST_CASE(Global, createtDirectoryListing)
+LONGBOW_TEST_CASE(Global, createDirectoryListing)
 {
     PARCBuffer *listing = ccnxSimpleFileTransferFileIO_CreateDirectoryListing(".");
 
