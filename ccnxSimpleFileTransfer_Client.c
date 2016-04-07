@@ -393,7 +393,7 @@ _isConfigValid(ClientState *config)
 static bool
 _parseCommandLine(int argc, char *argv[], ClientState *clientState)
 {
-    char c;
+    int c;
     while ((c = getopt(argc, argv, "l:mvh")) != -1) {
         switch (c) {
             case 'l': // -l ccnx:/foo/bar

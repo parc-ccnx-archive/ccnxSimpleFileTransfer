@@ -532,7 +532,7 @@ _dumpState(ServerState *config)
 static bool
 _parseCommandLine(int argc, char *argv[], ServerState *serverState)
 {
-    char c;
+    int c;
     while ((c = getopt(argc, argv, "l:s:mhv")) != -1) {
         switch (c) {
             case 'l': // -l ccnx:/foo/bar
