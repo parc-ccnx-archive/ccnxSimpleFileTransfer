@@ -1,5 +1,5 @@
 /*
- * Copyright (c) LICENSELICENSE.md5ccnxchngco.outcopyright.txtfiles.allfiles.difffiles.lstgetYears.shnewcofiles.outofiles.sholdyears.outtttttCopyright(c)2016XeroxCorporation(Xerox)andPaloAltoResearchCenter(PARC), Xerox Corporation (Xerox) and Palo Alto Research Center, Inc (PARC)
+ * Copyright (c) 2016, Xerox Corporation (Xerox) and Palo Alto Research Center, Inc (PARC)
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@
  */
 /**
  * @author Alan Walendowski, Palo Alto Research Center (Xerox PARC)
- * @copyright (c) LICENSELICENSE.md5ccnxchngco.outcopyright.txtfiles.allfiles.difffiles.lstgetYears.shnewcofiles.outofiles.sholdyears.outtttttCopyright(c)2016XeroxCorporation(Xerox)andPaloAltoResearchCenter(PARC), Xerox Corporation (Xerox) and Palo Alto Research Center, Inc (PARC).  All rights reserved.
+ * @copyright (c) 2016 Xerox Corporation (Xerox) and Palo Alto Research Center, Inc (PARC).  All rights reserved.
  */
 
 // Include the file(s) containing the functions to be tested.
